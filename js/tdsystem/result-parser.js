@@ -1,6 +1,8 @@
 var fs = require('fs');
 var resultParser = (function() {
   'use strict';
+  const EVENT_PAT = /(男子|女子|混合)([^m]+m)(自由形|背泳ぎ|平泳ぎ|バタフライ|個人メドレー|フリーリレー|メドレーリレー)/;
+  const RESULT_PAT = /([0-9]+)　(.+).+\((.+)\).+([0-9]+:[0-9]{2}\.[0-9]{2})/;
   var parseDocument = function($) {
     var i = 0;
     var text = '';
@@ -8,8 +10,17 @@ var resultParser = (function() {
     var doc = {};
 
     $('td').each(function(i) {
+      let text = $(this).find('font').text();
+      let eventMatch = EVENT_PAT.exec(text.replace(/[\s　]/g,''));
+      let resultMatch = RESULT_PAT.exec(text.trim());
       if (i === 0) { // Include title, date, and venue
-        parseTitle($(this).find('font').text(), doc);
+        parseTitle(text, doc);
+      } else if (eventMatch) {
+        doc.sex = eventMatch[1];
+        doc.distance = eventMatch[2];
+        doc.style = eventMatch[3];
+      } else if (resultMatch) {
+        console.log(resultMatch.input);
       }
     });
 
