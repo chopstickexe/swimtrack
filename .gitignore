@@ -1,3 +1,5 @@
 node_modules
 www.tdsystem.co.jp
 ndom-wait
+*.csv
+.DS_Store

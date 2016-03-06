@@ -5,10 +5,16 @@ var Q = require('q');
 var jschardet = require('jschardet');
 var _ = require('underscore');
 var Iconv = require('iconv').Iconv;
-var recursive_readdir = require('recursive-readdir');
-var htmlFileExpr = /\.html?$/i;
-var baseDir = 'www.tdsystem.co.jp';
-var baseURL = 'http://www.tdsystem.co.jp';
+var recursive = require('recursive-readdir');
+var parser = require('../tdsystem/result-parser.js');
+var stringify = require('csv-stringify');
+
+var PAT_HTML_FN = /\.html?$/i;
+var PAT_BASE_DIR = /.*www\.tdsystem\.co\.jp/;
+
+var baseDir = process.argv[2];
+var baseURL = process.argv[3];
+var outCSV = process.argv[4];
 
 function checkSaveDir(fname) {
   var dir = path.dirname(fname);
@@ -23,64 +29,51 @@ function checkSaveDir(fname) {
   }
 }
 
-function readHtml(filename) {
-  return Q.nfcall(fs.readFile, filename)
+function readHtml(filepath) {
+  return Q.nfcall(fs.readFile, filepath)
     .then(function(text) {
       var encoding = jschardet.detect(text).encoding,
         iconv,
         $,
-        getText,
-        getMetaContent,
-        directory,
-        title,
-        keywords,
-        description;
+        doc;
+
+      if (!encoding) {
+        return doc;
+      }
 
       if (encoding !== 'ascii' && encoding !== 'utf-8') {
         iconv = new Iconv(encoding, 'UTF-8//TRANSLIT//IGNORE');
-        text = iconv.convert(text);
+        text = iconv.convert(text).toString();
       }
 
       $ = cheerio.load(text);
-      getText = function(selector) {
-        var el = $(selector);
-        return el ? el.text() : '';
-      };
-      getMetaContent = function(name) {
-        var el = $('meta[name=' + name + ']');
-        content = el ? el.attr('content') : '';
-        return content ? content : '';
-      };
+      doc = parser.parseDocument($);
 
-      filename = filename.substr(baseDir.length);
-      directory = path.dirname(filename);
-      title = getText('title');
-      keywords = getMetaContent('keywords');
-      description = getMetaContent('description');
-      return {
-        directory: directory,
-        title: title,
-        keywords: keywords,
-        description: description,
-        URL: baseURL + filename
-      };
+      doc.filepath = filepath;
+      doc.url = filepath.replace(PAT_BASE_DIR, baseURL);
+      return doc;
     });
 }
 
 function writeCSV(results) {
-  console.log(results);
+  var writeStream = fs.createWriteStream(outCSV);
+  stringify(results, function(err, output){
+    writeStream.write(output);
+    writeStream.end();
+  });
 }
 
 /**
  * Main process
  */
+
 if (baseDir.substr(-1) === '/' && baseDir !== '/') {
   baseDir = baseDir.substr(0, baseDir.length - 1);
 }
-Q.nfcall(recursive_readdir, baseDir)
+Q.nfcall(recursive, baseDir)
   .then(function(files) {
     var htmlFiles = _.filter(files, function(file) {
-        return htmlFileExpr.test(file);
+        return PAT_HTML_FN.test(file);
       }),
       promises = _.map(htmlFiles, function(file) {
         return readHtml(file);
