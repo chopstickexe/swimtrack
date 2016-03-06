@@ -48,6 +48,9 @@ function readHtml(filepath) {
       }
 
       if (encoding !== 'ascii' && encoding !== 'utf-8') {
+        if (encoding === 'ISO-8859-2') { // Recognized as non Japanese encoding
+          encoding = 'SHIFT_JIS';
+        }
         iconv = new Iconv(encoding, 'UTF-8//TRANSLIT//IGNORE');
         text = iconv.convert(text).toString();
       }
@@ -62,6 +65,7 @@ function readHtml(filepath) {
 }
 
 var META_CONTENT_CHARSET_PAT = /charset=(.+)/;
+
 function getHTMLCharSet($) {
   var encoding;
   $('meta').each(function() {
