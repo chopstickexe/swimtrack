@@ -32,10 +32,16 @@ function checkSaveDir(fname) {
 function readHtml(filepath) {
   return Q.nfcall(fs.readFile, filepath)
     .then(function(text) {
-      var encoding = jschardet.detect(text).encoding,
+      var encoding,
         iconv,
         $,
-        doc;
+        doc = {};
+
+      $ = cheerio.load(text);
+      encoding = getHTMLCharSet($);
+      if (!encoding) {
+        encoding = guessEncoding(text);
+      }
 
       if (!encoding) {
         return doc;
@@ -45,19 +51,39 @@ function readHtml(filepath) {
         iconv = new Iconv(encoding, 'UTF-8//TRANSLIT//IGNORE');
         text = iconv.convert(text).toString();
       }
-
-      $ = cheerio.load(text);
+      $ = cheerio.load(text); // load the converted text again
       doc = parser.parseDocument($);
 
+      doc.encoding = encoding;
       doc.filepath = filepath;
       doc.url = filepath.replace(PAT_BASE_DIR, baseURL);
       return doc;
     });
 }
 
+var META_CONTENT_CHARSET_PAT = /charset=(.+)/;
+function getHTMLCharSet($) {
+  var encoding;
+  $('meta').each(function() {
+    var content = $(this).attr('content');
+    if (content) {
+      var contentMatch = META_CONTENT_CHARSET_PAT.exec(content);
+      if (contentMatch && contentMatch.length > 1) {
+        encoding = contentMatch[1];
+        return false;
+      }
+    }
+  });
+  return encoding;
+}
+
+function guessEncoding(text) {
+  return jschardet.detect(text).encoding;
+}
+
 function writeCSV(results) {
   var writeStream = fs.createWriteStream(outCSV);
-  stringify(results, function(err, output){
+  stringify(results, function(err, output) {
     writeStream.write(output);
     writeStream.end();
   });
