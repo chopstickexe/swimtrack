@@ -35,7 +35,7 @@ function readHtml(filepath) {
       var encoding,
         iconv,
         $,
-        doc = {};
+        docs = [];
 
       $ = cheerio.load(text);
       encoding = getHTMLCharSet($);
@@ -55,12 +55,14 @@ function readHtml(filepath) {
         text = iconv.convert(text).toString();
       }
       $ = cheerio.load(text); // load the converted text again
-      doc = parser.parseDocument($);
+      docs = parser.parseDocument($);
 
+      /**
       doc.encoding = encoding;
       doc.filepath = filepath;
       doc.url = filepath.replace(PAT_BASE_DIR, baseURL);
-      return doc;
+      */
+      return docs;
     });
 }
 
