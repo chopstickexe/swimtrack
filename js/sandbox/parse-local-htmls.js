@@ -8,13 +8,18 @@ var Iconv = require('iconv').Iconv;
 var recursive = require('recursive-readdir');
 var parser = require('../tdsystem/result-parser.js');
 var stringify = require('csv-stringify');
+var mongodb = require('mongodb');
 
 var PAT_HTML_FN = /\.html?$/i;
 var PAT_BASE_DIR = /.*www\.tdsystem\.co\.jp/;
 
+var writeStream;
 var baseDir = process.argv[2];
 var baseURL = process.argv[3];
-var outCSV = process.argv[4];
+var mongoServer = new mongodb.Server('localhost', 27017);
+var dbHandle = new mongodb.Db('swimtrack', mongoServer, {
+  safe: true
+});
 
 function checkSaveDir(fname) {
   var dir = path.dirname(fname);
@@ -34,8 +39,7 @@ function readHtml(filepath) {
     .then(function(text) {
       var encoding,
         iconv,
-        $,
-        docs = [];
+        $;
 
       $ = cheerio.load(text);
       encoding = getHTMLCharSet($);
@@ -55,14 +59,19 @@ function readHtml(filepath) {
         text = iconv.convert(text).toString();
       }
       $ = cheerio.load(text); // load the converted text again
-      docs = parser.parseDocument($);
-
-      /**
-      doc.encoding = encoding;
-      doc.filepath = filepath;
-      doc.url = filepath.replace(PAT_BASE_DIR, baseURL);
-      */
-      return docs;
+      _.each(parser.parseDocument($), function(doc) {
+        doc.encoding = encoding;
+        doc.url = filepath.replace(PAT_BASE_DIR, baseURL);
+        dbHandle.collection(
+          'swimtrack',
+          function(err, collection) {
+            if (err) {
+              console.log(err);
+            }
+            collection.insert(doc);
+          }
+        );
+      });
     });
 }
 
@@ -87,11 +96,12 @@ function guessEncoding(text) {
   return jschardet.detect(text).encoding;
 }
 
-function writeCSV(results) {
-  var writeStream = fs.createWriteStream(outCSV);
-  stringify(results, function(err, output) {
+function writeCSV(result) {
+  stringify(result, function(err, output) {
+    if (err) {
+      console.log('output: output, err: ' + err);
+    }
     writeStream.write(output);
-    writeStream.end();
   });
 }
 
@@ -102,16 +112,23 @@ function writeCSV(results) {
 if (baseDir.substr(-1) === '/' && baseDir !== '/') {
   baseDir = baseDir.substr(0, baseDir.length - 1);
 }
-Q.nfcall(recursive, baseDir)
-  .then(function(files) {
-    var htmlFiles = _.filter(files, function(file) {
-        return PAT_HTML_FN.test(file);
-      }),
-      promises = _.map(htmlFiles, function(file) {
-        return readHtml(file);
-      });
 
-    return Q.all(promises);
+var db;
+Q.ninvoke(dbHandle, 'open')
+  .then(function(index) {
+    console.log('*** Connected to Mongo DB ***');
+    db = index;
   })
-  .then(writeCSV)
-  .done();
+  .then(function() {
+    Q.nfcall(recursive, baseDir)
+      .then(function(files) {
+        Q.all(files.map(function(file) {
+          readHtml(file);
+        }));
+      });
+  })
+  .then(function() {
+    db.close(function() {
+      console.log('*** DB connection closed ***');
+    });
+  });

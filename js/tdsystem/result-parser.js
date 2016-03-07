@@ -2,7 +2,8 @@ var fs = require('fs');
 var resultParser = (function() {
   'use strict';
   const EVENT_PAT = /(男子|女子|混合)([^m]+m)(自由形|背泳ぎ|平泳ぎ|バタフライ|個人メドレー|フリーリレー|メドレーリレー)/;
-  const RESULT_PAT = /([0-9]+)　(.+).+\((.+)\).+([0-9]*:*[0-9]{2}\.[0-9]{2})/;
+  const RESULT_PAT = /([0-9]+)　(.+).+\((.+)\)[^0-9:]+([0-9]*:*[0-9]{2}\.[0-9]{2})/;
+  const GRADE_PAT = /([小中高大][1-6１-６])/;
   var parseDocument = function($) {
     var i = 0;
     var text = '';
@@ -22,9 +23,15 @@ var resultParser = (function() {
         docBase.style = eventMatch[3];
       } else if (resultMatch) {
         let doc = {};
+        let name = resultMatch[2].replace(/[\s　]/g,'').trim();
+        let gradeMatch = GRADE_PAT.exec(name);
+
         Object.assign(doc, docBase);
         doc.rank = resultMatch[1];
-        doc.name = resultMatch[2].replace(/[\s　]/g,'').trim();
+        doc.name = gradeMatch ? name.substr(0, gradeMatch.index) : name;
+        if (gradeMatch) {
+          doc.grade = gradeMatch[1];
+        }
         doc.team = resultMatch[3].trim();
         doc.time = resultMatch[4];
         docs.push(doc);
