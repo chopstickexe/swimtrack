@@ -16,10 +16,7 @@ var PAT_BASE_DIR = /.*www\.tdsystem\.co\.jp/;
 var writeStream;
 var baseDir = process.argv[2];
 var baseURL = process.argv[3];
-var mongoServer = new mongodb.Server('localhost', 27017);
-var dbHandle = new mongodb.Db('swimtrack', mongoServer, {
-  safe: true
-});
+var db, col;
 
 function checkSaveDir(fname) {
   var dir = path.dirname(fname);
@@ -35,7 +32,8 @@ function checkSaveDir(fname) {
 }
 
 function readHtml(filepath) {
-  return Q.nfcall(fs.readFile, filepath)
+  var deferred = Q.defer();
+  Q.nfcall(fs.readFile, filepath)
     .then(function(text) {
       var encoding,
         iconv,
@@ -48,7 +46,7 @@ function readHtml(filepath) {
       }
 
       if (!encoding) {
-        return doc;
+        return;
       }
 
       if (encoding !== 'ascii' && encoding !== 'utf-8') {
@@ -59,20 +57,15 @@ function readHtml(filepath) {
         text = iconv.convert(text).toString();
       }
       $ = cheerio.load(text); // load the converted text again
-      _.each(parser.parseDocument($), function(doc) {
+      var docs = parser.parseDocument($); // Synchronous
+      for (var i = 0, max = docs.length; i < max; i++) {
+        var doc = docs[i];
         doc.encoding = encoding;
         doc.url = filepath.replace(PAT_BASE_DIR, baseURL);
-        dbHandle.collection(
-          'swimtrack',
-          function(err, collection) {
-            if (err) {
-              console.log(err);
-            }
-            collection.insert(doc);
-          }
-        );
-      });
+      }
+      deferred.resolve(docs);
     });
+  return deferred.promise;
 }
 
 var META_CONTENT_CHARSET_PAT = /charset=(.+)/;
@@ -113,22 +106,19 @@ if (baseDir.substr(-1) === '/' && baseDir !== '/') {
   baseDir = baseDir.substr(0, baseDir.length - 1);
 }
 
-var db;
-Q.ninvoke(dbHandle, 'open')
-  .then(function(index) {
-    console.log('*** Connected to Mongo DB ***');
-    db = index;
-  })
-  .then(function() {
+mongodb.MongoClient.connect('mongodb://localhost:27017/swimtrack')
+  .then(function(database) {
+    db = database;
+    col = db.collection('records');
     Q.nfcall(recursive, baseDir)
       .then(function(files) {
         Q.all(files.map(function(file) {
-          readHtml(file);
-        }));
+            readHtml(file).then(function(docs) {
+              col.insertMany(docs)
+                .then(function(r){
+                  console.log('file: ' + file + ', inserted: ' + r.insertedCount);
+                });
+            });
+          }));
       });
-  })
-  .then(function() {
-    db.close(function() {
-      console.log('*** DB connection closed ***');
-    });
   });
