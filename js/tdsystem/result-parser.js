@@ -1,13 +1,18 @@
+
+/**
+ * Result HTML page parser
+ * @author chopstickexe
+ */
 var fs = require('fs');
 var resultParser = (function() {
   'use strict';
   const EVENT_PAT = /(男子|女子|混合)([^m]+m)(自由形|背泳ぎ|平泳ぎ|バタフライ|個人メドレー|フリーリレー|メドレーリレー)/;
   const RESULT_PAT = /([0-9]+)　(.+).+\((.+)\)[^0-9:]+([0-9]*:*[0-9]{2}\.[0-9]{2})/;
   const GRADE_PAT = /([小中高大][1-6１-６])/;
-  var parseDocument = function($) {
-    var i = 0;
-    var text = '';
-    var docs = [];
+  let parseDocument = function($) {
+    let i = 0;
+    let text = '';
+    let docs = [];
     let docBase = {};
 
     $('td').each(function(i) {
@@ -47,8 +52,8 @@ var resultParser = (function() {
   const LONG_COURSE_PAT = /\(50|５０[mMｍＭ]\)/;
   const SHORT = 'short';
   const LONG = 'long';
-  var parseTitle = function(text, doc) {
-    var elms = [];
+  let parseTitle = function(text, doc) {
+    let elms = [];
 
     if (!text) {
       return;

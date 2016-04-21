@@ -1,17 +1,22 @@
+/**
+ * Crawler for the pages on www.tdsystem.co.jp
+ * @author chopstickexe
+ */
 var client = require('cheerio-httpcli');
 var url = require('url');
 var sleep = require('sleep');
 var crawler = function(parser, settings) {
+  'use strict';
   if (!parser) {
     throw new Error('Parser is not specified.');
   }
   if (!settings) {
     settings = {};
   }
-  var maxLevel = settings.maxLevel ? settings.maxLevel : 10;
-  var maxIntervalSecs = settings.maxIntervalSecs ? settings.maxIntervalSecs : 5;
-  var targetDomain = settings.targetDomain ? settings.targetDomain : '';
-  var visited = {};
+  let maxLevel = settings.maxLevel ? settings.maxLevel : 10;
+  let maxIntervalSecs = settings.maxIntervalSecs ? settings.maxIntervalSecs : 5;
+  let targetDomain = settings.targetDomain ? settings.targetDomain : '';
+  let visited = {};
 
   var download = function(targetURL, level) {
     console.time('download: ' + targetURL);
@@ -29,7 +34,7 @@ var crawler = function(parser, settings) {
     sleep.sleep(Math.floor(Math.random() * maxIntervalSecs));
 
     client.fetch(targetURL, 'sjis', function(err, $, res) {
-      var document = {};
+      let document = {};
 
       if (err) {
         console.log('error: ' + err);
@@ -41,9 +46,9 @@ var crawler = function(parser, settings) {
         return;
       }
 
-      var foundA = false;
+      let foundA = false;
       $('a').each(function() {
-        var href = $(this).attr('href');
+        let href = $(this).attr('href');
         if (!href) {
           return;
         }
