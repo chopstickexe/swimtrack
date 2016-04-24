@@ -1,6 +1,5 @@
 /**
  * Crawler for the pages on www.tdsystem.co.jp
- * @author chopstickexe
  */
 var client = require('cheerio-httpcli');
 var url = require('url');

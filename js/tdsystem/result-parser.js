@@ -1,7 +1,5 @@
-
 /**
  * Result HTML page parser
- * @author chopstickexe
  */
 var fs = require('fs');
 var resultParser = (function() {
