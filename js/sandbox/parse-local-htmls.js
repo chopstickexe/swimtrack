@@ -6,7 +6,7 @@ var jschardet = require('jschardet');
 var _ = require('underscore');
 var Iconv = require('iconv').Iconv;
 var recursive = require('recursive-readdir');
-var parser = require('../tdsystem/result-parser.js');
+var parser2008 = require('../tdsystem/result-parser-2008.js');
 var stringify = require('csv-stringify');
 var mongodb = require('mongodb');
 
@@ -57,7 +57,7 @@ function readHtml(filepath) {
         text = iconv.convert(text).toString();
       }
       $ = cheerio.load(text); // load the converted text again
-      var docs = parser.parseDocument($); // Synchronous
+      var docs = parser2008.parseDocument($); // Synchronous
       for (var i = 0, max = docs.length; i < max; i++) {
         var doc = docs[i];
         doc.encoding = encoding;
