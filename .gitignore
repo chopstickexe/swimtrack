@@ -1,5 +1,6 @@
-node_modules
-www.tdsystem.co.jp
+node_modules/
+bower_components/
+www.tdsystem.co.jp/
 ndom-wait
 *.csv
 *.log
