@@ -10,8 +10,20 @@ recordControllers.controller('recordCtrl', ['$scope', '$http', '_',
     $scope.style = '自由形';
 
     $scope.submit = function() {
+      let config = {
+        params: {}
+      };
+      if ($scope.name && $scope.name.length > 0) {
+        config.params.name = $scope.name;
+      }
+      if ($scope.distance != '指定なし') {
+        config.params.distance = $scope.distance;
+      }
+      if ($scope.style != '指定なし') {
+        config.params.style = $scope.style;
+      }
       if ($scope.name) {
-        $http.get('http://localhost:3000/db?name=' + $scope.name + '&distance=' + $scope.distance + '&style=' + $scope.style)
+        $http.get('http://localhost:3000/db', config)
           .success(function(data) {
             data = _.uniq(data).sort(function(a, b) {
               if (a.year && b.year && a.year !== b.year) {
