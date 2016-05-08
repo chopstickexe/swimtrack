@@ -14,45 +14,73 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="bower_components/html5-boilerplate/dist/css/normalize.css">
   <link rel="stylesheet" href="bower_components/html5-boilerplate/dist/css/main.css">
+  <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="app.css">
   <script src="bower_components/html5-boilerplate/dist/js/vendor/modernizr-2.8.3.min.js"></script>
+  <script src="bower_components/jquery/dist/jquery.min.js"></script>
+  <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
 </head>
 
 <body>
-  <div ng-controller="recordCtrl">
-    <form ng-submit="submit()">
-      <input type="text" ng-model="name"/>
-      <select ng-model="distance">
-        <option value="25m">25m</option>
-        <option value="50m">50m</option>
-        <option value="100m">100m</option>
-        <option value="200m">200m</option>
-        <option value="400m">400m</option>
-      </select>
-      <select ng-model="style">
-        <option value="自由形">自由形</option>
-        <option value="背泳ぎ">背泳ぎ</option>
-        <option value="平泳ぎ">平泳ぎ</option>
-        <option value="バタフライ">バタフライ</option>
-        <option value="個人メドレー">個人メドレー</option>
-      </select>
-      <input type="submit" id="submit" value="Submit" />
-    </form>
-    <table>
-      <tr ng-repeat="record in records">
-        <td>{{record.year}}</td>
-        <td>{{record.month}}</td>
-        <td>{{record.day}}</td>
-        <td>{{record.title}}</td>
-        <td>{{record.course}}</td>
-        <td>{{record.distance}}</td>
-        <td>{{record.style}}</td>
-        <td>{{record.time}}</td>
-        <td>{{record.url}}</td>
-      </tr>
-    </table>
-  </div>
+  <!-- Static navbar -->
+  <nav class="navbar navbar-default navbar-static-top">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="#">swimtrack</a>
+      </div>
+    </div>
+  </nav>
 
+  <div class="container-fluid">
+    <div ng-controller="recordCtrl">
+      <form class="form-inline" ng-submit="submit()">
+        <div class="form-group">
+          <input type="text" class="form-control" ng-model="name" placeholder="選手名を入力してください（例: 鈴木一郎）" style="width: 300px;" />
+          <select class="form-control" ng-model="distance" style="width: 100px;">
+            <option>25m</option>
+            <option>50m</option>
+            <option>100m</option>
+            <option>200m</option>
+            <option>400m</option>
+            <option>800m</option>
+            <option>1500m</option>
+          </select>
+          <select class="form-control" ng-model="style" style="width: 100px;">
+            <option>自由形</option>
+            <option>背泳ぎ</option>
+            <option>平泳ぎ</option>
+            <option>バタフライ</option>
+            <option>個人メドレー</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary">検索</button>
+      </form>
+      <div style="margin-top: 20px;">
+        <table class="table table-striped">
+          <tr>
+            <th>年</th>
+            <th>月</th>
+            <th>日</th>
+            <th>大会名</th>
+            <th>長水路・短水路</th>
+            <th>種目</th>
+            <th>記録</th>
+            <th>公式リザルト</th>
+          </tr>
+          <tr ng-repeat="record in records">
+            <td>{{record.year}}</td>
+            <td>{{record.month}}</td>
+            <td>{{record.day}}</td>
+            <td>{{record.title}}</td>
+            <td>{{record.course}}</td>
+            <td>{{record.distance}}{{record.style}}</td>
+            <td>{{record.time}}</td>
+            <td><a href="{{record.url}}" target="_blank">{{record.url}}</a></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
   <!-- In production use:
   <script src="//ajax.googleapis.com/ajax/libs/angularjs/x.x.x/angular.min.js"></script>
   -->

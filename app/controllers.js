@@ -5,6 +5,10 @@ var recordControllers = angular.module('myApp.recordControllers', []);
 
 recordControllers.controller('recordCtrl', ['$scope', '$http', '_',
   function($scope, $http, _) {
+    // Initialize
+    $scope.distance = '25m';
+    $scope.style = '自由形';
+
     $scope.submit = function() {
       if ($scope.name) {
         $http.get('http://localhost:3000/db?name=' + $scope.name + '&distance=' + $scope.distance + '&style=' + $scope.style)
