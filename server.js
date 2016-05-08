@@ -21,7 +21,7 @@
   });
 
   /* GET records */
-  const MONGO_DB_PATH = 'mongodb://localhost:27017/swimtrack';
+  const MONGO_DB_PATH = 'mongodb://heroku_h64z01xl:9bpbsvuampp8ln2ahdoi4p4aee@ds017582.mlab.com:17582/heroku_h64z01xl';
   const COLLECTION = 'records';
   app.get('/db', function(req, res) {
     let query = {};
