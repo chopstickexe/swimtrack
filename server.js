@@ -7,41 +7,45 @@
   var _ = require('underscore');
   var mongodb = require('mongodb');
   var app = express();
-  mongodb.MongoClient.connect('mongodb://localhost:27017/swimtrack')
-    .then(function(db) {
-      app.set('views', __dirname + '/app');
 
-      app.use(logger('dev'));
-      app.use(bodyParser.json());
-      app.use(bodyParser.urlencoded({
-        extended: false
-      }));
-      app.use(cookieParser());
-      app.use(express.static(__dirname + '/app'));
+  app.use(logger('dev'));
+  app.use(bodyParser.json());
+  app.use(bodyParser.urlencoded({
+    extended: false
+  }));
+  app.use(cookieParser());
+  app.use(express.static(__dirname + '/app'));
 
-      app.get('/', function(request, response) {
-        response.render('index.html');
-      });
+  app.get('/', function(request, response) {
+    response.render('index.html');
+  });
 
-      const MONGO_DB_PATH = 'mongodb://localhost:27017/swimtrack';
-      const COLLECTION = 'records';
-
-      /* GET home page. */
-      app.get('/db', function(req, res) {
-        mongodb.MongoClient.connect(MONGO_DB_PATH)
-          .then(function(db) {
-            db.collection(COLLECTION).find({
-                name: req.query.name,
-                distance: req.query.distance,
-                style: req.query.style
-              })
-              .toArray()
-              .then(function(list) {
-                res.send(list);
-              });
+  /* GET records */
+  const MONGO_DB_PATH = 'mongodb://localhost:27017/swimtrack';
+  const COLLECTION = 'records';
+  app.get('/db', function(req, res) {
+    let query = {};
+    if (req.query.name && req.query.name.length > 0) {
+      query.name = req.query.name;
+    }
+    if (req.query.distance && req.query.distance.length > 0) {
+      query.distance = req.query.distance;
+    }
+    if (req.query.style && req.query.style.length > 0) {
+      query.style = req.query.style;
+    }
+    mongodb.MongoClient.connect(MONGO_DB_PATH)
+      .then(function(db) {
+        db.collection(COLLECTION).find(query)
+          .toArray()
+          .then(function(list) {
+            res.send(list);
+          })
+          .then(function() {
+            db.close();
           });
       });
-    });
+  });
 
   module.exports = app;
 })();
