@@ -23,7 +23,7 @@ recordControllers.controller('recordCtrl', ['$scope', '$http', '_',
         config.params.style = $scope.style;
       }
       if ($scope.name) {
-        $http.get('http://localhost:3000/db', config)
+        $http.get('/db', config)
           .success(function(data) {
             data = _.uniq(data).sort(function(a, b) {
               if (a.year && b.year && a.year !== b.year) {
