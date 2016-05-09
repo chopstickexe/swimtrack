@@ -10,7 +10,7 @@ recordControllers.controller('recordCtrl', ['$scope', '$http', '_',
     $scope.style = '自由形';
 
     $scope.submit = function() {
-      let config = {
+      var config = {
         params: {}
       };
       if ($scope.name && $scope.name.length > 0) {
