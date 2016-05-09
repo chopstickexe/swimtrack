@@ -1,5 +1,5 @@
 /**
- * Result HTML page parser
+ * Result HTML page parser for records after 2008
  */
 var fs = require('fs');
 var resultParser = (function() {
