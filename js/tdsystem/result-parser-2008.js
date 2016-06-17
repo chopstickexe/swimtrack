@@ -1,9 +1,8 @@
 /**
  * Result HTML page parser for records after 2008
  */
-var fs = require('fs');
+"use strict";
 var resultParser = (function() {
-  'use strict';
   const EVENT_PAT = /(男子|女子|混合)([^m]+m)(自由形|背泳ぎ|平泳ぎ|バタフライ|個人メドレー|フリーリレー|メドレーリレー)/;
   const RESULT_PAT = /([0-9]+)　(.+).+\((.+)\)[^0-9:]+([0-9]*:*[0-9]{2}\.[0-9]{2})/;
   const GRADE_PAT = /([小中高大][1-6１-６])/;
