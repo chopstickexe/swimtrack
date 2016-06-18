@@ -11,5 +11,6 @@
     "inject": false
   },
   "esnext": true,
-  "laxbreak": true
+  "laxbreak": true,
+  "node": true
 }
