@@ -10,4 +10,8 @@ module.exports = (function() {
     return 2 * PI * r;
   };
 
+  return {
+    area: area,
+    circumference: circumference
+  };
 }());
