@@ -23,7 +23,8 @@ CREATE TABLE events(
   sex      sex_type,
   distance INTEGER,
   style    VARCHAR(10),
-  age      INTEGER
+  age      INTEGER,
+  relay    BOOLEAN
 );
 
 CREATE INDEX sex_on_events ON events(sex);
@@ -79,10 +80,10 @@ INSERT INTO meets(name, start_date, venue_id, course)
   VALUES ('第1回東京都水泳大会', '2016-01-01', 1, 'long'),
   ('第2回東京都水泳大会', '2016-04-01', 1, 'long');
 
-INSERT INTO events(sex, distance, style, age)
-  VALUES ('男子', 100, '背泳ぎ', 30),
-   ('男子', 100, '背泳ぎ', 40),
-   ('混合', 200, 'メドレーリレー', 200);
+INSERT INTO events(sex, distance, style, age, relay)
+  VALUES ('男子', 100, '背泳ぎ', 30, 'false'),
+   ('男子', 100, '背泳ぎ', 40, 'false'),
+   ('混合', 200, 'メドレーリレー', 200, 'true');
 
 INSERT INTO races(meet_id, event_id)
   VALUES (1, 1), (1, 2), (2, 1), (2, 2), (2, 3);
@@ -101,7 +102,8 @@ INSERT INTO results(race_id, rank, record)
   (1, 2, '1 minute 05.23 seconds'),
   (3, 1, '1 minute 01.40 seconds'),
   (3, 2, '1 minute 10.81 seconds'),
-  (3, 3, '1 minute 11.21 seconds');
+  (3, 3, '1 minute 11.21 seconds'),
+  (5, 1, '2 minute 30.53 seconds');
 
-INSERT INTO user_result(user_id, result_id)
-  VALUES (2, 1), (1, 2), (1, 3), (5, 4), (2, 5);
+INSERT INTO user_result(user_id, result_id, swim_order)
+  VALUES (2, 1, 0), (1, 2, 0), (1, 3, 0), (5, 4, 0), (2, 5, 0), (1, 6, 1), (3, 6, 2), (4, 6, 3), (5, 6, 4);
