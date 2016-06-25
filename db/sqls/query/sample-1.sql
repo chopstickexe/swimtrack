@@ -10,4 +10,5 @@ SELECT results.rank, users.name, teams.name, results.record, meets.name, events.
   AND meets.name = '第1回東京都水泳大会'
   AND events.sex = '男子'
   AND events.distance = 100
-  AND events.style = '背泳ぎ';
+  AND events.style = '背泳ぎ'
+  ORDER BY results.rank;
