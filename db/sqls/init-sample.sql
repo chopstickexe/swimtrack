@@ -2,7 +2,7 @@ CREATE DATABASE swimtrack;
 
 \c swimtrack;
 
-CREATE TYPE course_type AS ENUM ('long', 'short');
+CREATE TYPE course_type AS ENUM ('長水路', '短水路');
 CREATE TYPE sex_type AS ENUM ('男子', '女子', '混合');
 
 CREATE TABLE venues(
@@ -77,8 +77,8 @@ INSERT INTO venues(name)
   VALUES ('東京国際水泳場');
 
 INSERT INTO meets(name, start_date, venue_id, course)
-  VALUES ('第1回東京都水泳大会', '2016-01-01', 1, 'long'),
-  ('第2回東京都水泳大会', '2016-04-01', 1, 'long');
+  VALUES ('第1回東京都水泳大会', '2016-01-01', 1, '長水路'),
+  ('第2回東京都水泳大会', '2016-04-01', 1, '長水路');
 
 INSERT INTO events(sex, distance, style, age, relay)
   VALUES ('男子', 100, '背泳ぎ', 30, 'false'),
