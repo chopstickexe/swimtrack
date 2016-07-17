@@ -2,7 +2,7 @@
  * Result HTML page parser for records after 2008
  */
 'use strict';
-var resultParser = (function() {
+module.exports = (function() {
   const EVENT_PAT = /(男子|女子|混合)([^m]+)m(自由形|背泳ぎ|平泳ぎ|バタフライ|個人メドレー|フリーリレー|メドレーリレー)/;
   const RELAY_PAT = /(男子|女子|混合)([^m]+)m(フリーリレー|メドレーリレー)/;
   const AGE_PAT = /([0-9]+)[~・]([0-9]+)歳/;
@@ -136,4 +136,3 @@ var resultParser = (function() {
     parseTitle: parseTitle
   };
 }());
-module.exports = resultParser;
