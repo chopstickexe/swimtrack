@@ -3,6 +3,7 @@
  */
 'use strict';
 module.exports = (function() {
+  var util = require('../swimtrack-util.js');
   const EVENT_PAT = /(男子|女子|混合)([^m]+)m(自由形|背泳ぎ|平泳ぎ|バタフライ|個人メドレー|フリーリレー|メドレーリレー)/;
   const RELAY_PAT = /(男子|女子|混合)([^m]+)m(フリーリレー|メドレーリレー)/;
   const AGE_PAT = /([0-9]+)[~・]([0-9]+)歳/;
@@ -22,7 +23,7 @@ module.exports = (function() {
     ret.user_result = [];
 
     $('td').each(function(i) {
-      let text = $(this).find('font').text().normalize('NFKC').replace(/[\s]/g,'');
+      let text = util.normalizeText($(this).find('font').text());
       let eventMatch = EVENT_PAT.exec(text);
       let ageMatch = AGE_PAT.exec(text);
       let resultMatch = RESULT_PAT.exec(text);
