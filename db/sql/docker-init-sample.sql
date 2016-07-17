@@ -15,6 +15,7 @@ CREATE TABLE meets(
   id         SERIAL PRIMARY KEY,
   name       VARCHAR(100),
   start_date DATE,
+  dates      DATE[],
   venue_id   INTEGER REFERENCES venues(id),
   course     course_type
 );
@@ -77,9 +78,9 @@ CREATE TABLE user_result(
 INSERT INTO venues(name, city)
   VALUES ('東京国際水泳場', '東京');
 
-INSERT INTO meets(name, start_date, venue_id, course)
-  VALUES ('第1回東京都水泳大会', '2016-01-01', 1, '長水路'),
-  ('第2回東京都水泳大会', '2016-04-01', 1, '長水路');
+INSERT INTO meets(name, start_date, dates, venue_id, course)
+  VALUES ('第1回東京都水泳大会', '2016-01-01', '{"2016-01-01"}', 1, '長水路'),
+  ('第2回東京都水泳大会', '2016-04-01', '{"2016-04-01", "2016-04-02"}',1, '長水路');
 
 INSERT INTO events(sex, distance, style, age, relay)
   VALUES ('男子', 100, '背泳ぎ', 30, 'false'),
