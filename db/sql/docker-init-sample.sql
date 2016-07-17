@@ -73,8 +73,8 @@ CREATE TABLE user_result(
   PRIMARY KEY (user_id, result_id)
 );
 
-INSERT INTO venues(name)
-  VALUES ('東京国際水泳場');
+INSERT INTO venues(name, city)
+  VALUES ('東京国際水泳場', '東京');
 
 INSERT INTO meets(name, start_date, venue_id, course)
   VALUES ('第1回東京都水泳大会', '2016-01-01', 1, '長水路'),
