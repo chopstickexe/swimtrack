@@ -7,7 +7,8 @@ CREATE TYPE sex_type AS ENUM ('男子', '女子', '混合');
 
 CREATE TABLE venues(
   id   SERIAL PRIMARY KEY,
-  name VARCHAR(50)
+  name VARCHAR(50),
+  city VARCHAR(50)
 );
 
 CREATE TABLE meets(
