@@ -7,62 +7,71 @@ module.exports = (function() {
   let dayRe = /([0-9]+)日\([日月火水木金土・祝]+\)/g; // Allow global match (its lastIndex property is updated by a match)
   const VENUE_PAT = /^(.+)\((25m|50m)\)$/;
   let parsePage = function(year, $) {
+    let ret = {};
+    ret.venues = {}; // Key = name, Value = object
+    ret.meets = [];
+    let venueLocalId = 0;
     $('table').each(function(i) { // for table per month
       let month = i + 1;
-      console.log('month: ' + month);
       $(this).find('tr').each(function(i) { // each meet
         if (i === 0) {// haeder row
           return;
         }
-        let days = [];
-        let meetName = '';
-        let meetCity = '';
-        let meetVenue = '';
-        let meetCourse = '';
-        let resultURL = '';
-        $(this).find('td').each(function(i) { // each cell
-          let fontElm = util.findLastFontElm($(this));
+        let venue = {};
+        let meet = {};
+        let $cells = $(this).find('td');
+        for (let i = 0; i < $cells.length; i++) { // each cell
+          let $cell = $cells[i]
+          let fontElm = util.findLastFontElm($($cell));
           let text = util.normalizeText(fontElm.text());
           switch (i) {
             case 0: // day
+              meet.days = [];
               let dayMatch;
               while ((dayMatch = dayRe.exec(text)) !== null) {
-                console.log('day: ' + dayMatch[0]);
-                days.push(dayMatch[0]);
+                let date = year + '-' + month + '-' + dayMatch[1];
+                meet.days.push(date);
               }
               break;
-            case 1: // meet.name
-              meetName = text;
-              console.log('meetName: ' + meetName);
+            case 1: // meet name
+              meet.name = text;
               break;
-            case 2:
-              meetCity = text;
-              console.log('meetCity: ' + meetCity);
+            case 2: // venue city
+              venue.city = text;
               break;
-            case 3:
+            case 3: // venue name and course
               let venueMatch = VENUE_PAT.exec(text);
               if (!venueMatch) {
                 break;
               }
-              meetVenue = venueMatch[1];
-              console.log('meetVenue: ' + meetVenue);
+              venue.name = venueMatch[1];
+              let meetCourse = '';
               if (venueMatch[2] === '25m') {
                 meetCourse = '短水路';
               } else if (venueMatch[2] === '50m') {
                 meetCourse = '長水路';
               }
-              console.log('meetCourse: ' + meetCourse);
+              venue.cource = meetCourse
               break;
             case 4:
-              resultURL = fontElm.find('a').attr('href');
-              console.log('URL: ' + resultURL);
+              meet.url = fontElm.find('a').attr('href');
               break;
           }
-        });
+        }
+        if (!ret.venues[venue.name]) {
+          if (venue.name) {
+            venue.id = venueLocalId++;
+            ret.venues[venue.name] = venue;
+            meet.venueId = venue.id;
+          }
+        } else {
+          meet.venueId = ret.venues[venue.name].id;
+        }
+        ret.meets.push(meet);
       });
     });
 
-    return {};
+    return ret;
   };
   return {
     parsePage: parsePage
