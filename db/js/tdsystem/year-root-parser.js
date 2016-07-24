@@ -11,26 +11,25 @@ module.exports = (function() {
     ret.venues = {}; // Key = name, Value = object
     ret.meets = [];
     let venueLocalId = 0;
-    $('table').each(function(i) { // for table per month
-      let month = i + 1;
-      $(this).find('tr').each(function(i) { // each meet
-        if (i === 0) {// haeder row
+    $('table').each(function(month) { // for table per month
+      $(this).find('tr').each(function(trIndex) { // each meet
+        if (trIndex === 0) {// haeder row
           return;
         }
         let venue = {};
         let meet = {};
         let $cells = $(this).find('td');
-        for (let i = 0; i < $cells.length; i++) { // each cell
-          let $cell = $cells[i]
+        for (let trIndex = 0; trIndex < $cells.length; trIndex++) { // each cell
+          let $cell = $cells[trIndex];
           let fontElm = util.findLastFontElm($($cell));
           let text = util.normalizeText(fontElm.text());
-          switch (i) {
+          switch (trIndex) {
             case 0: // day
               meet.days = [];
               let dayMatch;
               while ((dayMatch = dayRe.exec(text)) !== null) {
-                let date = year + '-' + month + '-' + dayMatch[1];
-                meet.days.push(date);
+                let date = new Date(Date.UTC(year, month, dayMatch[1]));
+                meet.days.push(util.formatDate(date));
               }
               break;
             case 1: // meet name
@@ -51,7 +50,7 @@ module.exports = (function() {
               } else if (venueMatch[2] === '50m') {
                 meetCourse = '長水路';
               }
-              venue.cource = meetCourse
+              venue.course = meetCourse;
               break;
             case 4:
               meet.url = fontElm.find('a').attr('href');

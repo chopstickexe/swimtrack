@@ -15,8 +15,15 @@ module.exports = (function() {
     }
     return $;
   };
+  var formatDate = function(date) {
+    if (!date) {
+      return date;
+    }
+    return date.toISOString().split('T')[0]; // This returns yyyy-mm-dd
+  };
   return {
     normalizeText: normalizeText,
-    findLastFontElm: findLastFontElm
+    findLastFontElm: findLastFontElm,
+    formatDate: formatDate
   };
 }());
