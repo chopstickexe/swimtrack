@@ -6,7 +6,7 @@ var testUrl = 'http://www.tdsystem.co.jp/i2015.htm';
 describe('Test 2015 top page', function() {
   it('should find a right meet and venue from a given meet name', function(done) {
     client.fetch(testUrl, 'Shift_JIS', function(err, $, res) {
-      let parseResult = parser.parsePage(2015, $);
+      let parseResult = parser.parsePage(2015, $, {});
       let meets = parseResult.meets;
       let venues = parseResult.venues;
       let meetFound = false;

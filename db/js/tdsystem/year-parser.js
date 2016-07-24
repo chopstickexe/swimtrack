@@ -6,9 +6,8 @@ module.exports = (function() {
   var util = require('../swimtrack-util.js');
   let dayRe = /([0-9]+)日\([日月火水木金土・祝]+\)/g; // Allow global match (its lastIndex property is updated by a match)
   const VENUE_PAT = /^(.+)\((25m|50m)\)$/;
-  let parsePage = function(year, $) {
+  let parsePage = function(year, $, venues) {
     let ret = {};
-    ret.venues = {}; // Key = name, Value = object
     ret.meets = [];
     let venueLocalId = 0;
     $('table').each(function(month) { // for table per month
@@ -57,14 +56,14 @@ module.exports = (function() {
               break;
           }
         }
-        if (!ret.venues[venue.name]) {
+        if (!venues[venue.name]) {
           if (venue.name) {
             venue.id = venueLocalId++;
-            ret.venues[venue.name] = venue;
+            venues[venue.name] = venue;
             meet.venueId = venue.id;
           }
         } else {
-          meet.venueId = ret.venues[venue.name].id;
+          meet.venueId = venues[venue.name].id;
         }
         ret.meets.push(meet);
       });
