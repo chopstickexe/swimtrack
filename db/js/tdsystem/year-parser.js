@@ -7,9 +7,12 @@ module.exports = (function() {
   let dayRe = /([0-9]+)日\([日月火水木金土・祝]+\)/g; // Allow global match (its lastIndex property is updated by a match)
   const VENUE_PAT = /^(.+)\((25m|50m)\)$/;
   let parsePage = function(year, $, venues) {
+    if (!venues) {
+      venues = {};
+    }
     let ret = {};
     ret.meets = [];
-    let venueLocalId = 0;
+    let venueLocalId = Object.keys(venues).length;
     $('table').each(function(month) { // for table per month
       $(this).find('tr').each(function(trIndex) { // each meet
         if (trIndex === 0) {// haeder row
