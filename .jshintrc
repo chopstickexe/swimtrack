@@ -10,7 +10,7 @@
     "module": false,
     "inject": false
   },
-  "esnext": true,
+  "esversion": 6,
   "laxbreak": true,
   "node": true
 }
