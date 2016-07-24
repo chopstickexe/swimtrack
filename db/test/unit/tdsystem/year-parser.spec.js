@@ -1,6 +1,6 @@
 'use strict';
 var client = require('cheerio-httpcli');
-var parser = require('../../../js/tdsystem/year-root-parser');
+var parser = require('../../../js/tdsystem/year-parser');
 var util = require('../../../js/swimtrack-util');
 var testUrl = 'http://www.tdsystem.co.jp/i2015.htm';
 describe('Test 2015 top page', function() {
