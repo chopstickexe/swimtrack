@@ -51,10 +51,17 @@
     for (const meetIndex in meets) { // for each meet
       let url = meets[meetIndex].url;
       if (!url) continue;
+
+      //
+      // Parse meet page (PRO.HTM)
+      //
       let meetPath = yearTopPage.path.substring(0, yearTopPage.path.lastIndexOf('/') + 1) + url;
       let $meet = util.parseLocalHtml(meetPath);
       let meetParseResult = meetParser.parsePage($meet);
       for (const raceIndex in meetParseResult.races) {
+        //
+        // Parse race page (###.HTM)
+        //
         let racePath = meetPath.substring(0, meetPath.lastIndexOf('/') + 1) + meetParseResult.races[raceIndex].page;
         let $race = util.parseLocalHtml(racePath);
         let raceParseResult = raceParser.parseDocument(meetId++, $race);
