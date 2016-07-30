@@ -6,6 +6,7 @@ module.exports = (function() {
   var util = require('../swimtrack-util.js');
   let dayRe = /([0-9]+)日\([日月火水木金土・祝]+\)/g; // Allow global match (its lastIndex property is updated by a match)
   const VENUE_PAT = /^(.+)\((25m|50m)\)$/;
+  const HTML_PAT = /HTM|HTML$/;
   let parsePage = function(year, $, venues) {
     if (!venues) {
       venues = {};
@@ -21,11 +22,11 @@ module.exports = (function() {
         let venue = {};
         let meet = {};
         let $cells = $(this).find('td');
-        for (let trIndex = 0; trIndex < $cells.length; trIndex++) { // each cell
-          let $cell = $cells[trIndex];
+        for (let tdIndex = 0; tdIndex < $cells.length; tdIndex++) { // each cell
+          let $cell = $cells[tdIndex];
           let fontElm = util.findLastFontElm($($cell));
           let text = util.normalizeText(fontElm.text());
-          switch (trIndex) {
+          switch (tdIndex) {
             case 0: // day
               meet.days = [];
               let dayMatch;
@@ -54,8 +55,14 @@ module.exports = (function() {
               }
               venue.course = meetCourse;
               break;
-            case 4:
-              meet.url = fontElm.find('a').attr('href');
+            case 4: // meet page url
+              meet.url = $($cell).find('a').attr('href');
+              if (!meet.url) {
+                console.warn('Cannot extract meet url', meet, venue);
+              } else if (HTML_PAT.exec(meet.url) === null) {// not html
+                console.warn('The meet page is not HTML', meet.url);
+                meet.url = null;
+              }
               break;
           }
         }
@@ -71,7 +78,6 @@ module.exports = (function() {
         ret.meets.push(meet);
       });
     });
-
     return ret;
   };
   return {
