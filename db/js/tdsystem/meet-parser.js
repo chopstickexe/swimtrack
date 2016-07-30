@@ -10,7 +10,6 @@ module.exports = (function() {
   let parsePage = function($) {
     let ret = {};
     ret.races = [];
-    let raceLocalId = 0;
     $('table').each(function(tableIndex) { // each race
       if (tableIndex === 0) {// Page header
         return;
