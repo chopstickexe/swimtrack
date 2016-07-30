@@ -20,15 +20,15 @@ module.exports = (function() {
       let eventMatch = EVENT_PAT.exec(raceText);
       if (eventMatch) { // Races for individuals
         race.sex = eventMatch[1];
-        race.distance = eventMatch[2];
+        race.distance = Number(eventMatch[2]);
         race.style = eventMatch[3];
         race.relay = false;
       }
 
       let relayMatch = RELAY_PAT.exec(raceText);
       if (relayMatch) {
-        race.sec = relayMatch[1];
-        race.distance = relayMatch[2];
+        race.sex = relayMatch[1];
+        race.distance = Number(relayMatch[2]);
         race.style = relayMatch[3];
         race.relay = true;
       }
