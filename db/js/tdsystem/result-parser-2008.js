@@ -13,7 +13,7 @@ module.exports = (function() {
     let text = '';
     let ret = {};
     let eventBase = {};
-    let currentEventId = -1;
+    let localEventId = -1;
     ret.events = [];
     ret.races = [];
     ret.users = [];
@@ -40,14 +40,14 @@ module.exports = (function() {
         let event = Object.assign({}, eventBase);
         event.age = parseInt(ageMatch[1], 10);
         ret.events.push(event);
-        currentEventId++;
+        localEventId++;
         ret.races.push({
           meetId: meetId,
-          eventId: currentEventId
+          eventId: localEventId
         });
       } else if (resultMatch) {
         let result = {
-          raceId: currentEventId
+          raceId: localEventId
         };
         let name = resultMatch[2].replace(/[\s　]/g,'').trim();
         let gradeMatch = GRADE_PAT.exec(name);
