@@ -38,7 +38,7 @@ module.exports = (function() {
         }
       } else if (ageMatch) {
         let event = Object.assign({}, eventBase);
-        event.age = parseInt(ageMatch[1], 10);
+        event.age = ageMatch[1];
         ret.events.push(event);
         localEventId++;
         ret.races.push({
