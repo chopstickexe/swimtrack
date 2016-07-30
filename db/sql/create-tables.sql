@@ -3,13 +3,15 @@ CREATE TYPE sex_type AS ENUM ('男子', '女子', '混合');
 
 CREATE TABLE venues(
   id   SERIAL PRIMARY KEY,
-  name VARCHAR(50)
+  name VARCHAR(50),
+  city VARCHAR(50)
 );
 
 CREATE TABLE meets(
   id         SERIAL PRIMARY KEY,
   name       VARCHAR(100),
   start_date DATE,
+  dates      DATE[],
   venue_id   INTEGER REFERENCES venues(id),
   course     course_type
 );
@@ -19,7 +21,7 @@ CREATE TABLE events(
   sex      sex_type,
   distance INTEGER,
   style    VARCHAR(10),
-  age      INTEGER,
+  age      VARCHAR(10),
   relay    BOOLEAN
 );
 
@@ -68,38 +70,3 @@ CREATE TABLE user_result(
   swim_order INTEGER,
   PRIMARY KEY (user_id, result_id)
 );
-
-INSERT INTO venues(name)
-  VALUES ('東京国際水泳場');
-
-INSERT INTO meets(name, start_date, venue_id, course)
-  VALUES ('第1回東京都水泳大会', '2016-01-01', 1, '長水路'),
-  ('第2回東京都水泳大会', '2016-04-01', 1, '長水路');
-
-INSERT INTO events(sex, distance, style, age, relay)
-  VALUES ('男子', 100, '背泳ぎ', 30, 'false'),
-   ('男子', 100, '背泳ぎ', 40, 'false'),
-   ('混合', 200, 'メドレーリレー', 200, 'true');
-
-INSERT INTO races(meet_id, event_id)
-  VALUES (1, 1), (1, 2), (2, 1), (2, 2), (2, 3);
-
-INSERT INTO users(name)
-  VALUES ('鈴木一郎'), ('田中二郎'), ('佐藤三子'), ('中村四美'), ('黒板五郎');
-
-INSERT INTO teams(name)
-  VALUES ('チームとびっ子'), ('さんまSC');
-
-INSERT INTO user_team(user_id, team_id, first_meet_id)
-  VALUES (1, 1, 1), (2, 2, 1), (3, 1, 2), (4, 1, 2), (5, 1, 1);
-
-INSERT INTO results(race_id, rank, record)
-  VALUES (1, 1, '1 minute 03.97 seconds'),
-  (1, 2, '1 minute 05.23 seconds'),
-  (3, 1, '1 minute 01.40 seconds'),
-  (3, 2, '1 minute 10.81 seconds'),
-  (3, 3, '1 minute 11.21 seconds'),
-  (5, 1, '2 minute 30.53 seconds');
-
-INSERT INTO user_result(user_id, result_id, swim_order)
-  VALUES (2, 1, 0), (1, 2, 0), (1, 3, 0), (5, 4, 0), (2, 5, 0), (1, 6, 1), (3, 6, 2), (4, 6, 3), (5, 6, 4);
