@@ -25,7 +25,7 @@ CREATE TABLE events(
   sex      sex_type,
   distance INTEGER,
   style    VARCHAR(10),
-  age      INTEGER,
+  age      VARCHAR(10),
   relay    BOOLEAN
 );
 
@@ -83,9 +83,9 @@ INSERT INTO meets(name, start_date, dates, venue_id, course)
   ('第2回東京都水泳大会', '2016-04-01', '{"2016-04-01", "2016-04-02"}',1, '長水路');
 
 INSERT INTO events(sex, distance, style, age, relay)
-  VALUES ('男子', 100, '背泳ぎ', 30, 'false'),
-   ('男子', 100, '背泳ぎ', 40, 'false'),
-   ('混合', 200, 'メドレーリレー', 200, 'true');
+  VALUES ('男子', 100, '背泳ぎ', '30〜35歳', 'false'),
+   ('男子', 100, '背泳ぎ', '40〜45歳', 'false'),
+   ('混合', 200, 'メドレーリレー', '200〜239歳', 'true');
 
 INSERT INTO races(meet_id, event_id)
   VALUES (1, 1), (1, 2), (2, 1), (2, 2), (2, 3);
