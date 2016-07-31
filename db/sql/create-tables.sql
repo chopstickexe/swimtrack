@@ -49,11 +49,11 @@ CREATE TABLE teams(
   name VARCHAR(30)
 );
 
-CREATE TABLE user_team(
+CREATE TABLE user_team_meet(
   user_id  INTEGER REFERENCES users(id),
   team_id  INTEGER REFERENCES teams(id),
-  first_meet_id INTEGER REFERENCES meets(id),
-  PRIMARY KEY (user_id, team_id)
+  meet_id INTEGER REFERENCES meets(id),
+  PRIMARY KEY (user_id, team_id, meet_id)
 );
 
 CREATE TABLE results(

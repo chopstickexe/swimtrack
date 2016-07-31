@@ -19,8 +19,8 @@ INSERT INTO users(name)
 INSERT INTO teams(name)
   VALUES ('チームとびっ子'), ('さんまSC');
 
-INSERT INTO user_team(user_id, team_id, first_meet_id)
-  VALUES (1, 1, 1), (2, 2, 1), (3, 1, 2), (4, 1, 2), (5, 1, 1);
+INSERT INTO user_team_meet(user_id, team_id, meet_id)
+  VALUES (1, 1, 1), (2, 2, 1), (1, 1, 2), (2, 2, 2), (3, 1, 2), (4, 1, 2), (5, 1, 2);
 
 INSERT INTO results(race_id, rank, record)
   VALUES (1, 1, '1 minute 03.97 seconds'),
