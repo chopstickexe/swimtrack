@@ -4,7 +4,8 @@ CREATE TYPE sex_type AS ENUM ('男子', '女子', '混合');
 CREATE TABLE venues(
   id   SERIAL PRIMARY KEY,
   name VARCHAR(50),
-  city VARCHAR(50)
+  city VARCHAR(50),
+  UNIQUE(name, city)
 );
 
 CREATE TABLE meets(
@@ -13,7 +14,8 @@ CREATE TABLE meets(
   start_date DATE,
   dates      DATE[],
   venue_id   INTEGER REFERENCES venues(id),
-  course     course_type
+  course     course_type,
+  UNIQUE(name, start_date, venue_id)
 );
 
 CREATE TABLE events(
