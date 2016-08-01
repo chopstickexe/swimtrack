@@ -8,31 +8,20 @@ describe('Test 2015 top page', function() {
     client.fetch(testUrl, 'Shift_JIS', function(err, $, res) {
       let parseResult = parser.parsePage(2015, $);
       let meets = parseResult.meets;
-      let venues = parseResult.venues;
       let meetFound = false;
-      let venueId = -1;
       for (let i = 0; i < meets.length; i++) {
         let meet = meets[i];
         if (meet.name === '中部学生選手権水泳競技大会') {
           meetFound = true;
           expect(meet.days).toContain('2015-07-04');
           expect(meet.days).toContain('2015-07-05');
-          venueId = meet.venueId;
+          expect(meet.venue.city).toEqual('愛知');
+          expect(meet.venue.name).toEqual('日本ガイシアリーナ');
+          expect(meet.venue.course).toEqual('長水路');
           break;
         }
       }
       expect(meetFound).toEqual(true);
-      expect(venueId).toBeGreaterThan(-1);
-
-      for (const venueKey in venues) {
-        let venue = venues[venueKey];
-        if (venue.id === venueId) {
-          expect(venue.city).toEqual('愛知');
-          expect(venue.name).toEqual('日本ガイシアリーナ');
-          expect(venue.course).toEqual('長水路');
-          break;
-        }
-      }
       done();
     });
   });

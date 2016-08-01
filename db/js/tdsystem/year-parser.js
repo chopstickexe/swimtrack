@@ -7,20 +7,16 @@ module.exports = (function() {
   let dayRe = /([0-9]+)日\([日月火水木金土・祝]+\)/g; // Allow global match (its lastIndex property is updated by a match)
   const VENUE_PAT = /^(.+)\((25m|50m)\)$/;
   const HTML_PAT = /HTM|HTML$/;
-  let parsePage = function(year, $, venues) {
-    if (!venues) {
-      venues = {};
-    }
+  let parsePage = function(year, $) {
     let ret = {};
     ret.meets = [];
-    let venueLocalId = Object.keys(venues).length;
     $('table').each(function(month) { // for table per month
       $(this).find('tr').each(function(trIndex) { // each meet
         if (trIndex === 0) {// haeder row
           return;
         }
-        let venue = {};
         let meet = {};
+        meet.venue = {};
         let $cells = $(this).find('td');
         for (let tdIndex = 0; tdIndex < $cells.length; tdIndex++) { // each cell
           let $cell = $cells[tdIndex];
@@ -39,41 +35,32 @@ module.exports = (function() {
               meet.name = text;
               break;
             case 2: // venue city
-              venue.city = text;
+              meet.venue.city = text;
               break;
             case 3: // venue name and course
               let venueMatch = VENUE_PAT.exec(text);
               if (!venueMatch) {
                 break;
               }
-              venue.name = venueMatch[1];
+              meet.venue.name = venueMatch[1];
               let meetCourse = '';
               if (venueMatch[2] === '25m') {
                 meetCourse = '短水路';
               } else if (venueMatch[2] === '50m') {
                 meetCourse = '長水路';
               }
-              venue.course = meetCourse;
+              meet.venue.course = meetCourse;
               break;
             case 4: // meet page url
               meet.url = $($cell).find('a').attr('href');
               if (!meet.url) {
-                console.warn('Cannot extract meet url', meet, venue);
+                console.warn('Cannot extract meet url', meet);
               } else if (HTML_PAT.exec(meet.url) === null) {// not html
                 console.warn('The meet page is not HTML', meet.url);
                 meet.url = null;
               }
               break;
           }
-        }
-        if (!venues[venue.name]) {
-          if (venue.name) {
-            venue.id = venueLocalId++;
-            venues[venue.name] = venue;
-            meet.venueId = venue.id;
-          }
-        } else {
-          meet.venueId = venues[venue.name].id;
         }
         ret.meets.push(meet);
       });
