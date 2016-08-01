@@ -17,8 +17,7 @@
       path: 'www.tdsystem.co.jp/i2016.htm',
       encoding: 'Shift_JIS'
     }
-    /**
-    ,
+    /** ,
     {
       year: 2015,
       url: 'http://www.tdsystem.co.jp/i2015.htm',
@@ -45,24 +44,47 @@
     }
     */
   ];
-  let pool = new pg.Pool({
-    user: 'postgres',
-    password: 'mysecretpassword',
-    host: '192.168.99.100',
-    port: 5432,
-    database: 'swimtrack',
-    max: 10,
-    idleTimeoutMillis: 1000});
-  let venues = {}; // Key = name, Value = object
-  let meetId = 0;
+  let pool = new pg.Pool();
+  pool.on('error', function(e, client) {
+    return console.error('DB Error', e);
+  });
+  let meetId;
   for (const yearIndex in YEAR_TOP_PAGES) {
     const yearTopPage = YEAR_TOP_PAGES[yearIndex];
     console.log('Parse ' + yearTopPage.year);
     let $ = util.parseLocalHtml(yearTopPage.path);
-    let yearParseResult = yearParser.parsePage(yearTopPage.year, $, venues);
+    let yearParseResult = yearParser.parsePage(yearTopPage.year, $);
     let meets = yearParseResult.meets;
     for (const meetIndex in meets) { // for each meet
-      let url = meets[meetIndex].url;
+      let meet = meets[meetIndex];
+      //
+      // Insert venue to DB if not exists and get venue ID
+      //
+      let venue = meet.venue;
+      let venueId = -1;
+      pool.query('INSERT INTO venues(name, city) SELECT CAST($1 AS VARCHAR), CAST($2 AS VARCHAR) WHERE NOT EXISTS (SELECT id FROM venues WHERE name = $1 AND city = $2)',
+        [venue.name, venue.city])
+        .then(function(insertResult) {
+          //
+          // Get venue ID
+          //
+          pool.query('SELECT id FROM venues WHERE name = $1 AND city = $2',
+            [venue.name, venue.city])
+            .then(function(selectResult) {
+              venueId = selectResult.rows[0].id;
+              //
+              // Insert meet to DB
+              //
+              pool.query('INSERT INTO meets(id, name, start_date, dates, venue_id, course) VALUES (DEFAULT, $1, $2, $3, $4, $5) RETURNING id',
+                [meet.name, meet.days[0], meet.days, venueId, venue.course])
+                .then(function(insertMeetResult) {
+                  meetId = insertMeetResult.rows[0].id;
+                  console.log('meetID = ' + meetId);
+                });
+            });
+        });
+      /**
+      let url = meet.url;
       if (!url) continue;
 
       //
@@ -70,26 +92,17 @@
       //
       let meetPath = yearTopPage.path.substring(0, yearTopPage.path.lastIndexOf('/') + 1) + url;
       let $meet = util.parseLocalHtml(meetPath);
-      let meetParseResult = meetParser.parsePage($meet);
-      for (const raceIndex in meetParseResult.races) {
+      meet.parseResult = meetParser.parsePage($meet);
+      let races = meet.parseResult.races;
+      for (const raceIndex in races) {
+        let race = races[raceIndex];
         //
         // Parse race page (###.HTM)
         //
-        let racePath = meetPath.substring(0, meetPath.lastIndexOf('/') + 1) + meetParseResult.races[raceIndex].page;
+        let racePath = meetPath.substring(0, meetPath.lastIndexOf('/') + 1) + race.page;
         let $race = util.parseLocalHtml(racePath);
-        let raceParseResult = raceParser.parseDocument(meetId++, $race);
-      }
+        race.parseResult = raceParser.parseDocument(meetId, $race);
+      }*/
     }
-  }
-  for (const venueKey in venues) {
-    let venue = venues[venueKey];
-    console.log('Insert ' + venueKey);
-    pool.query('INSERT INTO venues(name, city) VALUES ($1, $2)',
-      [venue.name, venue.city],
-      function(err, result) {
-        if(err) {
-          return console.error(err);
-        }
-      });
   }
 }());

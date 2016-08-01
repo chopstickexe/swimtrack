@@ -21,7 +21,7 @@ module.exports = (function() {
         for (let tdIndex = 0; tdIndex < $cells.length; tdIndex++) { // each cell
           let $cell = $cells[tdIndex];
           let fontElm = util.findLastFontElm($($cell));
-          let text = util.normalizeText(fontElm.text());
+          let text = util.normalizeText($($cell).text());
           switch (tdIndex) {
             case 0: // day
               meet.days = [];
@@ -40,6 +40,7 @@ module.exports = (function() {
             case 3: // venue name and course
               let venueMatch = VENUE_PAT.exec(text);
               if (!venueMatch) {
+                meet.venue.name = text;
                 break;
               }
               meet.venue.name = venueMatch[1];
