@@ -24,7 +24,8 @@ CREATE TABLE events(
   distance INTEGER,
   style    VARCHAR(10),
   age      VARCHAR(10),
-  relay    BOOLEAN
+  relay    BOOLEAN,
+  UNIQUE(sex, distance, style, age, relay)
 );
 
 CREATE INDEX sex_on_events ON events(sex);
@@ -36,34 +37,38 @@ CREATE INDEX style_on_events ON events(style);
 CREATE TABLE races(
   id         SERIAL PRIMARY KEY,
   meet_id    INTEGER REFERENCES meets(id),
-  event_id   INTEGER REFERENCES events(id)
+  event_id   INTEGER REFERENCES events(id),
+  UNIQUE(meet_id, event_id)
 );
 
 CREATE TABLE users(
   id   SERIAL PRIMARY KEY,
-  name VARCHAR(30)
+  name VARCHAR(30),
+  UNIQUE(name)
 );
 
 CREATE INDEX name_on_users ON users(name);
 
 CREATE TABLE teams(
   id   SERIAL PRIMARY KEY,
-  name VARCHAR(30)
+  name VARCHAR(30),
+  UNIQUE(name)
 );
 
 CREATE TABLE user_team_meet(
   user_id  INTEGER REFERENCES users(id),
   team_id  INTEGER REFERENCES teams(id),
-  meet_id INTEGER REFERENCES meets(id),
+  meet_id  INTEGER REFERENCES meets(id),
   PRIMARY KEY (user_id, team_id, meet_id)
 );
 
 CREATE TABLE results(
   id       SERIAL PRIMARY KEY,
-  race_id INTEGER REFERENCES races(id),
+  race_id  INTEGER REFERENCES races(id),
   rank     INTEGER,
   record   INTERVAL HOUR TO SECOND NOT NULL,
-  raps     INTERVAL HOUR TO SECOND[]
+  raps     INTERVAL HOUR TO SECOND[],
+  UNIQUE(race_id, rank, record)
 );
 
 CREATE TABLE user_result(
