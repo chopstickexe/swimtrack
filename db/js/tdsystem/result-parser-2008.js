@@ -6,24 +6,19 @@ module.exports = (function() {
   var util = require('../swimtrack-util.js');
   const EVENT_PAT = /(男子|女子|混合)([^m]+)m(自由形|背泳ぎ|平泳ぎ|バタフライ|個人メドレー|フリーリレー|メドレーリレー)/;
   const RELAY_PAT = /(男子|女子|混合)([^m]+)m(フリーリレー|メドレーリレー)/;
-  const AGE_PAT = /([\d・〜]+歳|歳以下|歳以上)/;
+  const AGE_PAT = /([\d・~]+歳|歳以下|歳以上)/;
   const RESULT_PAT = /([0-9]+)(.+)\((.+)\)([0-9]*):*([0-9]*):*([0-9]{2}\.[0-9]{2})/;
   const GRADE_PAT = /([小中高大][1-6])/;
-  let parseDocument = function(meetId, $) {
+  let parseDocument = function($) {
     let text = '';
     let ret = {};
     let eventBase = {};
-    let localEventId = -1;
-    ret.events = [];
-    ret.races = [];
-    ret.users = [];
-    ret.teams = [];
-    ret.user_team = [];
+    let currentEvent = {};
     ret.results = [];
-    ret.user_result = [];
 
-    $('td').each(function(i) {
-      let text = util.normalizeText($(this).find('font').text());
+    let $lines = $('td');
+    for (let lineIndex = 0; lineIndex < $lines.length; lineIndex++) {
+      let text = util.normalizeText($($lines[lineIndex]).find('font').text()); // TODO $(this).text() works?
       let eventMatch = EVENT_PAT.exec(text);
       let ageMatch = AGE_PAT.exec(text);
       let resultMatch = RESULT_PAT.exec(text);
@@ -37,54 +32,26 @@ module.exports = (function() {
           eventBase.relay = false;
         }
       } else if (ageMatch) {
-        let event = Object.assign({}, eventBase);
-        event.age = ageMatch[1];
-        ret.events.push(event);
-        localEventId++;
-        ret.races.push({
-          meetId: meetId,
-          eventId: localEventId
-        });
+        currentEvent = Object.assign({}, eventBase);
+        currentEvent.age = ageMatch[1];
       } else if (resultMatch) {
         let result = {
-          raceId: localEventId
+          event: currentEvent
         };
-        let name = resultMatch[2].replace(/[\s　]/g,'').trim();
+        let name = resultMatch[2];
         let gradeMatch = GRADE_PAT.exec(name);
 
         result.rank = parseInt(resultMatch[1], 10);
-        ret.users.push(gradeMatch ? name.substr(0, gradeMatch.index) : name);
-        let userId = ret.users.length - 1;  // Suppose no one can swim over twice in the same race
-
-        let grade;
-        if (gradeMatch) {
-          grade = gradeMatch[1];
-        }
-
-        let team = resultMatch[3].trim();
-        let index = ret.teams.indexOf(team);
-        if (index === -1) { // Does not exist
-          ret.teams.push(team);
-          index = ret.teams.length - 1;
-        }
-        ret.user_team.push({
-          userId: userId,
-          teamId: index
-        });
+        result.user = gradeMatch ? name.substr(0, gradeMatch.index) : name; // Remove grade string from name
+        result.team = resultMatch[3];
 
         let hour = resultMatch[4];
         let min = resultMatch[5];
         let sec = resultMatch[6];
         result.record = (hour && min ? hour + ' hour ' : '') + (hour && !min ? hour + ' minute ' : '') + sec + ' seconds';
         ret.results.push(result);
-
-        ret.user_result.push({
-          userId: userId,
-          resultId: ret.results.length - 1
-        });
       }
-    });
-
+    }
     return ret;
   };
 
