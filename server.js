@@ -24,7 +24,13 @@
   if (process.env.HEROKU) {
     pg.defaults.ssl = true;
   }
-  const COLLECTION_PATH = process.env.DATABASE_URL;
+
+  let pool = new pg.Pool({
+    host: process.env.PGHOST, // Server hosting the postgres database
+    max: 10, // max number of clients in the pool
+    idleTimeoutMillis: 30000, // how long a client is allowed to remain idle before being closed
+  });
+
   const SEARCH_BY_NAME_QUERY = 'SELECT users.name AS user_name,' +
     ' teams.name AS team_name,' +
     ' TO_CHAR(results.record, \'FMMI:SS.MS\') AS record,' +
@@ -37,14 +43,15 @@
     ' events.sex,' +
     ' events.distance,' +
     ' events.style' +
-    ' FROM results, users, teams, user_team, user_result, meets, events, races' +
+    ' FROM results, users, teams, user_team_meet, user_result, meets, events, races' +
     ' WHERE results.id = user_result.result_id' +
     ' AND results.race_id = races.id' +
     ' AND races.meet_id = meets.id' +
     ' AND races.event_id = events.id' +
     ' AND user_result.user_id = users.id' +
-    ' AND user_team.user_id = users.id' +
-    ' AND user_team.team_id = teams.id' +
+    ' AND user_team_meet.user_id = users.id' +
+    ' AND user_team_meet.team_id = teams.id' +
+    ' AND user_team_meet.meet_id = meets.id' +
     ' AND users.name = $1::text' +
     ' ORDER BY meets.start_date;';
   app.get('/db', function(req, res) {
@@ -58,7 +65,7 @@
     if (req.query.style && req.query.style.length > 0) {
       query.style = req.query.style;
     }
-    pg.connect(COLLECTION_PATH, function(err, client) {
+    pool.connect(function(err, client, done) {
       if (err) throw err;
 
       client.query({
@@ -66,6 +73,9 @@
         text: SEARCH_BY_NAME_QUERY,
         values: [query.name]
       }, function(err, result) {
+        if (err) throw err;
+
+        done();
         console.log("Result: " + result.rows.length);
         res.send(result.rows);
       });
