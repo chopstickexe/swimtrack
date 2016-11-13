@@ -13,10 +13,10 @@ describe('2016年大会結果パージングのテスト', function() {
           expect(parseResult).toBeDefined();
           expect(parseResult.results).toBeDefined();
 
-          let userName = normalize('伊藤勝介');
+          let playerName = normalize('伊藤勝介');
           let resultElm = parseResult.results.find(function(elm) {
-            expect(elm.user).toBeDefined();
-            if (elm.user === userName) {
+            expect(elm.player).toBeDefined();
+            if (elm.player === playerName) {
               return true;
             }
             return false;

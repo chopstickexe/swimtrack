@@ -42,7 +42,7 @@ module.exports = (function() {
         let gradeMatch = GRADE_PAT.exec(name);
 
         result.rank = parseInt(resultMatch[1], 10);
-        result.user = gradeMatch ? name.substr(0, gradeMatch.index) : name; // Remove grade string from name
+        result.player = gradeMatch ? name.substr(0, gradeMatch.index) : name; // Remove grade string from name
         result.team = resultMatch[3];
 
         let hour = resultMatch[4];
