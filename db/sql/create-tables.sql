@@ -60,6 +60,8 @@ CREATE TABLE players(
   meet_id INTEGER REFERENCES meets(id)
 );
 
+CREATE INDEX name_on_players ON players(name);
+
 CREATE TABLE user_player(
   user_id   INTEGER REFERENCES users(id),
   player_id INTEGER REFERENCES players(id),
