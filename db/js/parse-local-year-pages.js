@@ -7,32 +7,17 @@
   var meetParser = require('./tdsystem/meet-parser');
   var raceParser = require('./tdsystem/result-parser-2008');
 
-  var getId = function(db, selectStatement, insertStatement, args) {
+  var getRecords = function(db, tableName, funcKey) {
     return new Promise(function(resolve, reject) {
-      db.task(function(t) {
-          t.oneOrNone(insertStatement, args)
-            .then(function(row) {
-              console.log('row=' + row);
-            })
-            .catch(function(err) {
-              console.log(err);
-            });
-        })
-        .catch(function(err) {
-          return reject(err);
-        });
-    });
-  };
-
-  var initVenues = function(db) {
-    return new Promise(function(resolve, reject) {
-      db.any('SELECT * FROM venues')
+      db.any('SELECT * FROM ' + tableName)
         .then(function(rows) {
           let ret = {};
           ret.map = {};
           ret.maxId = -1;
           for (const row of rows) {
-            ret.map[row.name] = row;
+            if (funcKey) {
+              ret.map[funcKey(row)] = row;
+            }
             if (ret.maxId < row.id) {
               ret.maxId = row.id;
             }
@@ -40,112 +25,20 @@
           return resolve(ret);
         })
         .catch(function(err) {
-          console.error('Error in initVenues');
           return reject(err);
         });
     });
   };
 
-  var initMeets = function(db) {
-    return new Promise(function(resolve, reject) {
-      db.any('SELECT * FROM meets')
-        .then(function(rows) {
-          let ret = {};
-          ret.map = {};
-          ret.maxId = -1;
-          for (const row of rows) {
-            ret[row.name] = row;
-            if (ret.maxId < row.id) {
-              ret.maxId = row.id;
-            }
-          }
-          return resolve(ret);
-        })
-        .catch(function(err) {
-          console.error('Error in initMeets');
-          return reject(err);
-        });
-    });
+  var getName = function(obj) {
+    if (!obj) {
+      return '';
+    }
+    return obj.name;
   };
 
-
-  var getVenueId = function(db, venue) {
-    return getId(db, 'SELECT id FROM venues WHERE name = $1 AND city = $2',
-      'INSERT INTO venues(name, city) VALUES($1, $2) ON CONFLICT(name, city) DO NOTHING RETURNING id', [venue.name, venue.city]);
-  };
-
-  var getMeetId = function(db, venueId, meet) {
-    return getId(db, 'SELECT id FROM meets WHERE name = $1 AND start_date = $2 AND venue_id = $4',
-      'INSERT INTO meets(name, start_date, dates, venue_id, course) SELECT $1, $2, CAST($3 AS DATE[]), $4, $5 RETURNING id', [meet.name, meet.days[0], meet.days, venueId, meet.venue.course]);
-  };
-
-  var getEventId = function(db, event) {
-    return getId(db, 'SELECT id FROM events WHERE sex = $1 AND distance = $2 AND style = $3 AND age = $4 AND relay = $5',
-      'INSERT INTO events(sex, distance, style, age, relay) VALUES($1, $2, $3, $4, $5) RETURNING id', [event.sex, event.distance, event.style, event.age, event.relay]);
-  };
-
-  var getRaceId = function(db, meetId, eventId) {
-    return getId(db, 'SELECT id FROM races WHERE meet_id = $1 AND event_id = $2',
-      'INSERT INTO races(meet_id, event_id) VALUES($1, $2) RETURNING id', [meetId, eventId]);
-  };
-
-  var getResultId = function(db, raceId, result) {
-    return getId(db, 'SELECT id FROM results WHERE race_id = $1 AND rank = $2 AND record = $3',
-      'INSERT INTO results(race_id, rank, record) SELECT $1, $2, $3 RETURNING id', [raceId, result.rank, result.record]);
-  };
-
-  var getUserId = function(db, user) {
-    return getId(db, 'SELECT id FROM users WHERE name = $1',
-      'INSERT INTO users(name) VALUES($1) RETURNING id',
-      user);
-  };
-
-  var getTeamId = function(db, team) {
-    return getId(db, 'SELECT id FROM teams WHERE name = $1',
-      'INSERT INTO teams(name) VALUES($1) RETURNING id',
-      team);
-  };
-
-  var insertUserResult = function(db, userId, resultId) {
-    return new Promise(function(resolve, reject) {
-      db.none('INSERT INTO user_result(user_id, result_id) SELECT $1, $2 WHERE NOT EXISTS (SELECT * FROM user_result WHERE user_id = $1 AND result_id = $2)', [userId, resultId])
-        .then(function() {
-          return resolve('done');
-        })
-        .catch(function(err) {
-          return reject(err);
-        });
-    });
-  };
-
-  var insertUserTeamMeet = function(db, userId, teamId, meetId) {
-    return new Promise(function(resolve, reject) {
-      db.none('INSERT INTO user_team_meet(user_id, team_id, meet_id) SELECT $1, $2, $3 WHERE NOT EXISTS (SELECT * FROM user_team_meet WHERE user_id = $1 AND team_id = $2 AND meet_id = $3)', [userId, teamId, meetId])
-        .then(function() {
-          return resolve('done');
-        })
-        .catch(function(err) {
-          return reject(err);
-        });
-    });
-  };
-
-  var processRace = function(db, meetId, raceId, racePath) {
-    //
-    // Parse race page (###.HTM)
-    //
-    let $race = util.parseLocalHtml(racePath);
-    let raceParseResult = raceParser.parseDocument($race);
-    raceParseResult.results.forEach(function(result) {
-      Promise.all([getUserId(db, result.user), getTeamId(db, result.team), getResultId(db, raceId, result)])
-        .then(function(results) {
-          insertUserResult(db, results[0], results[2]);
-          insertUserTeamMeet(db, results[0], results[1], meetId);
-        })
-        .catch(function(err) {
-          console.error(err);
-        });
-    });
+  var getEventKey = function(eventObj) {
+    return eventObj.sex + ':' + eventObj.distance + ':' + eventObj.style + ':' + eventObj.age;
   };
 
   /**
@@ -179,12 +72,29 @@
     user: process.env.PGUSER,
     password: process.env.PGPASSWORD
   });
-  Promise.all([initVenues(db), initMeets(db)])
+  Promise.all([
+      getRecords(db, 'venues', getName),
+      getRecords(db, 'meets', getName),
+      getRecords(db, 'events', getEventKey),
+      getRecords(db, 'users', getName),
+      getRecords(db, 'teams', getName),
+      getRecords(db, 'races'),
+      getRecords(db, 'results')
+    ])
     .then(function(values) {
       let venues = values[0].map;
       let venueMaxId = values[0].maxId;
       let meets = values[1].map;
       let meetMaxId = values[1].maxId;
+      let events = values[2].map;
+      let eventMaxId = values[2].maxId;
+      let users = values[3].map;
+      let userMaxId = values[3].maxId;
+      let teams = values[4].map;
+      let teamMaxId = values[4].maxId;
+      let raceMaxId = values[5].maxId;
+      let resultMaxId = values[6].maxId;
+
       //
       // Process each year index page
       //
@@ -203,6 +113,11 @@
           if (!meet.name || meets[meet.name]) { // No name or already in DB
             continue;
           }
+          console.log('Process ' + meet.name);
+          let races = [];
+          let results = [];
+          let userResults = [];
+          let userTeamMeets = [];
           //
           // Define meet id
           //
@@ -218,12 +133,99 @@
             meet.venue.id = venues[meet.venue.name].id;
           } else {
             meet.venue.id = ++venueMaxId;
+            venues[meet.venue.name] = {
+              id: meet.venue.id,
+              name: meet.venue.name,
+              city: meet.venue.city
+            };
+          }
+          meets[meet.name] = {
+            id: meet.id,
+            name: meet.name,
+            start_date: meet.days[0],
+            dates: meet.days,
+            venue_id: meet.venue.id,
+            course: meet.venue.course
+          };
+          //
+          // Parse meet page (PRO.HTM)
+          //
+          if (!meet.url) {
+            continue;
+          }
+          const meetPagePath = yearTopPage.path.substring(0, yearTopPage.path.lastIndexOf('/') + 1) + meet.url;
+          let meetParseResult = meetParser.parsePage(util.parseLocalHtml(meetPagePath));
+          for (let race of meetParseResult.races) {
+            let eventKey = getEventKey(race);
+            if (events[eventKey]) {
+              race.eventId = events[eventKey].id;
+            } else {
+              race.eventId = ++eventMaxId;
+              events[eventKey] = {
+                id: race.eventId,
+                sex: race.sex,
+                distance: race.distance,
+                style: race.style,
+                age: race.age,
+                relay: race.relay
+              };
+            }
+            race.id = ++raceMaxId;
+            races.push({
+              id: race.id,
+              meet_id: meet.id,
+              event_id: race.eventId
+            });
+            //
+            // Parse race page (###.HTM)
+            //
+            const racePagePath = meetPagePath.substring(0, meetPagePath.lastIndexOf('/') + 1) + race.page;
+            let raceParseResult = raceParser.parseDocument(util.parseLocalHtml(racePagePath));
+            for (let result of raceParseResult.results) {
+              result.id = ++resultMaxId;
+              results.push({
+                id: result.id,
+                race_id: race.id,
+                rank: result.rank,
+                record: result.record
+              });
+
+              if (users[result.user]) {
+                result.userId = users[result.user].id;
+              } else {
+                result.userId = ++userMaxId;
+                users[result.user] = {
+                  id: result.userId,
+                  name: result.user
+                };
+              }
+
+              if (teams[result.team]) {
+                result.teamId = teams[result.team].id;
+              } else {
+                result.teamId = ++teamMaxId;
+                teams[result.team] = {
+                  id: result.teamId,
+                  name: result.team
+                };
+              }
+
+              userResults.push({
+                user_id: result.userId,
+                result_id: result.id
+              });
+
+              userTeamMeets.push({
+                user_id: result.userId,
+                team_id: result.teamId,
+                meet_id: meet.id
+              });
+            }
           }
         }
       }
     })
     .catch(function(err) {
-      console.error('Error in main');
-      console.error(err);
+      console.error(err.stack);
     });
 }());
