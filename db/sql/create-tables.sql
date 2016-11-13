@@ -42,12 +42,10 @@ CREATE TABLE races(
 );
 
 CREATE TABLE users(
-  id   INTEGER PRIMARY KEY,
-  name VARCHAR(30),
-  UNIQUE(name)
+  id          INTEGER PRIMARY KEY,
+  name        VARCHAR(100),
+  screen_name VARCHAR(100)
 );
-
-CREATE INDEX name_on_users ON users(name);
 
 CREATE TABLE teams(
   id   INTEGER PRIMARY KEY,
@@ -55,11 +53,17 @@ CREATE TABLE teams(
   UNIQUE(name)
 );
 
-CREATE TABLE user_team_meet(
-  user_id  INTEGER REFERENCES users(id),
-  team_id  INTEGER REFERENCES teams(id),
-  meet_id  INTEGER REFERENCES meets(id),
-  PRIMARY KEY (user_id, team_id, meet_id)
+CREATE TABLE players(
+  id      INTEGER PRIMARY KEY,
+  name    VARCHAR(100),
+  team_id INTEGER REFERENCES teams(id),
+  meet_id INTEGER REFERENCES meets(id)
+);
+
+CREATE TABLE user_player(
+  user_id   INTEGER REFERENCES users(id),
+  player_id INTEGER REFERENCES players(id),
+  PRIMARY KEY (user_id, player_id)
 );
 
 CREATE TABLE results(
@@ -71,9 +75,9 @@ CREATE TABLE results(
   UNIQUE(race_id, rank, record)
 );
 
-CREATE TABLE user_result(
-  user_id    INTEGER REFERENCES users(id),
+CREATE TABLE player_result(
+  player_id    INTEGER REFERENCES players(id),
   result_id  INTEGER REFERENCES results(id),
   swim_order INTEGER,
-  PRIMARY KEY (user_id, result_id)
+  PRIMARY KEY (player_id, result_id)
 );
