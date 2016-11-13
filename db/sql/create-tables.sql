@@ -22,8 +22,8 @@ CREATE TABLE events(
   id       INTEGER PRIMARY KEY,
   sex      sex_type,
   distance INTEGER,
-  style    VARCHAR(10),
-  age      VARCHAR(10),
+  style    VARCHAR(50),
+  age      VARCHAR(50),
   relay    BOOLEAN,
   UNIQUE(sex, distance, style, age, relay)
 );
@@ -49,7 +49,7 @@ CREATE TABLE users(
 
 CREATE TABLE teams(
   id   INTEGER PRIMARY KEY,
-  name VARCHAR(30),
+  name VARCHAR(50),
   UNIQUE(name)
 );
 
