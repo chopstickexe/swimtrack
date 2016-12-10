@@ -2,6 +2,7 @@
   'use strict';
 
   var pgp = require('pg-promise')();
+  var _ = require('underscore');
   var util = require('./swimtrack-util');
   var yearParser = require('./tdsystem/year-parser');
   var meetParser = require('./tdsystem/meet-parser');
@@ -39,6 +40,10 @@
 
   var getEventKey = function(eventObj) {
     return eventObj.sex + ':' + eventObj.distance + ':' + eventObj.style + ':' + eventObj.age;
+  };
+
+  var getRaceKey = function(raceObj) {
+    return raceObj.meet_id + ':' + raceObj.event_id;
   };
 
   /**
@@ -105,18 +110,18 @@
           let $ = util.parseLocalHtml(yearTopPage.path);
           let yearParseResult = yearParser.parsePage(yearTopPage.year, $);
 
-          let meets = yearParseResult.meets;
-          if (!meets) {
+          let meetsInYear = yearParseResult.meets;
+          if (!meetsInYear) {
             console.log('No meet found.');
             continue;
           }
-          console.log(meets.length + ' meets found.');
-          for (let meet of meets) {
+          console.log(meetsInYear.length + ' meets found.');
+          for (let meet of meetsInYear) {
             if (!meet.name || meets[meet.name]) { // No name or already in DB
               continue;
             }
             console.log('Process ' + meet.name);
-            let races = [];
+            let races = {};
             let results = [];
             let playerResults = [];
             //
@@ -172,12 +177,22 @@
                     relay: race.relay
                   };
                 }
-                race.id = ++raceMaxId;
-                races.push({
-                  id: race.id,
+                //
+                // Define race id and generate a record for race table
+                //
+                let raceObj = {
                   meet_id: meet.id,
                   event_id: race.eventId
-                });
+                };
+                let raceKey = getRaceKey(raceObj);
+                if (races[raceKey]) {
+                  console.error('WARNING: Duplicated race keys: meet page = ' + meetPagePath + ', event = ' + eventKey);
+                  race.id = races[raceKey].id;
+                } else {
+                  race.id = ++raceMaxId;
+                  raceObj.id = race.id;
+                  races[raceKey] = raceObj;
+                }
                 //
                 // Parse race page (###.HTM)
                 //
@@ -227,6 +242,36 @@
                   continue;
                 }
               }
+              //
+              // Insert
+              //
+              if (results.length === 0) {
+                continue;
+              }
+              let raceCS = new pgp.helpers.ColumnSet(['id', 'meet_id', 'event_id'], {
+                table: 'races'
+              });
+              let resultCS = new pgp.helpers.ColumnSet(['id', 'race_id', 'rank', 'record'], {
+                table: 'results'
+              });
+              let playerResultCS = new pgp.helpers.ColumnSet(['player_id', 'result_id'], {
+                table: 'player_result'
+              });
+              let raceValues = _.values(races);
+              db.tx(function(t) {
+                  return this.batch([
+                    this.none(pgp.helpers.insert(raceValues, raceCS)),
+                    this.none(pgp.helpers.insert(results, resultCS)),
+                    this.none(pgp.helpers.insert(playerResults, playerResultCS))
+                  ]);
+                })
+                .then(data => {
+                  console.log('Succeed to insert races and results: ' + meetPagePath);
+                })
+                .catch(err => {
+                  console.error('Failed to insert races and results: ' + meetPagePath);
+                  console.error(err.stack);
+                });
             } catch (err) {
               console.error('Failed to parse meet page: ' + meetPagePath);
               console.error(err.stack);
@@ -239,6 +284,115 @@
           continue;
         }
       }
+      //
+      // Insert venues
+      //
+      db.tx(function(t) {
+          return this.none(pgp.helpers.insert(
+            _.values(venues),
+            new pgp.helpers.ColumnSet(['id', 'name', 'city'], {
+              table: 'venues'
+            })));
+        })
+        .then(data => {
+          console.log('Succeed to insert venues');
+        })
+        .catch(err => {
+          console.error('Failed to insert venues');
+          console.error(err.stack);
+        });
+      //
+      // Insert meets
+      //
+      db.tx(function(t) {
+          return this.none(pgp.helpers.insert(
+            _.values(meets),
+            new pgp.helpers.ColumnSet([
+              'id',
+              'name',
+              'start_date', {
+                name: 'dates',
+                cast: 'date[]'
+              },
+              'venue_id',
+              'course'
+            ], {
+              table: 'meets'
+            })));
+        })
+        .then(data => {
+          console.log('Succeed to insert meets');
+        })
+        .catch(err => {
+          console.error('Failed to insert meets');
+          console.error(err.stack);
+        });
+      //
+      // Insert events
+      //
+      db.tx(function(t) {
+          return this.none(pgp.helpers.insert(
+            _.values(events),
+            new pgp.helpers.ColumnSet([
+              'id',
+              'sex',
+              'distance',
+              'style',
+              'age',
+              'relay'
+            ], {
+              table: 'events'
+            })));
+        })
+        .then(data => {
+          console.log('Succeed to insert events');
+        })
+        .catch(err => {
+          console.error('Failed to insert events');
+          console.error(err.stack);
+        });
+      //
+      // Insert teams
+      //
+      db.tx(function(t) {
+          return this.none(pgp.helpers.insert(
+            _.values(teams),
+            new pgp.helpers.ColumnSet([
+              'id',
+              'name'
+            ], {
+              table: 'teams'
+            })));
+        })
+        .then(data => {
+          console.log('Succeed to insert teams');
+        })
+        .catch(err => {
+          console.error('Failed to insert teams');
+          console.error(err.stack);
+        });
+      //
+      // Insert players
+      //
+      db.tx(function(t) {
+          return this.none(pgp.helpers.insert(
+            _.values(players),
+            new pgp.helpers.ColumnSet([
+              'id',
+              'name',
+              'team_id',
+              'meet_id'
+            ], {
+              table: 'players'
+            })));
+        })
+        .then(data => {
+          console.log('Succeed to insert players');
+        })
+        .catch(err => {
+          console.error('Failed to insert players');
+          console.error(err.stack);
+        });
     })
     .catch(function(err) {
       console.error(err.stack);
