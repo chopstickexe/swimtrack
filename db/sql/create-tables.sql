@@ -74,8 +74,7 @@ CREATE TABLE results(
   race_id  INTEGER,
   rank     INTEGER,
   record   INTERVAL HOUR TO SECOND NOT NULL,
-  raps     INTERVAL HOUR TO SECOND[],
-  UNIQUE(race_id, rank, record)
+  raps     INTERVAL HOUR TO SECOND[]
 );
 
 CREATE TABLE player_result(
