@@ -31,7 +31,7 @@
     idleTimeoutMillis: 30000, // how long a client is allowed to remain idle before being closed
   });
 
-  const SEARCH_BY_NAME_QUERY = 'SELECT users.name AS user_name,' +
+  const SEARCH_BY_NAME_QUERY = 'SELECT players.name AS player_name,' +
     ' teams.name AS team_name,' +
     ' TO_CHAR(results.record, \'FMMI:SS.MS\') AS record,' +
     ' results.rank,' +
@@ -43,16 +43,15 @@
     ' events.sex,' +
     ' events.distance,' +
     ' events.style' +
-    ' FROM results, users, teams, user_team_meet, user_result, meets, events, races' +
-    ' WHERE results.id = user_result.result_id' +
+    ' FROM results, players, teams, player_result, meets, events, races' +
+    ' WHERE players.name = $1::text' +
+    ' AND player_result.player_id = players.id' +
+    ' AND players.team_id = teams.id' +
+    ' AND players.meet_id = meets.id' +
+    ' AND results.id = player_result.result_id' +
     ' AND results.race_id = races.id' +
     ' AND races.meet_id = meets.id' +
     ' AND races.event_id = events.id' +
-    ' AND user_result.user_id = users.id' +
-    ' AND user_team_meet.user_id = users.id' +
-    ' AND user_team_meet.team_id = teams.id' +
-    ' AND user_team_meet.meet_id = meets.id' +
-    ' AND users.name = $1::text' +
     ' ORDER BY meets.start_date;';
   app.get('/db', function(req, res) {
     let query = {};
