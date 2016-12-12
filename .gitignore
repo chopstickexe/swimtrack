@@ -5,4 +5,4 @@ ndom-wait
 *.csv
 *.log
 .DS_Store
-swimtrack-backup-*
+db/dump
