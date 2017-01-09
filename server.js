@@ -31,10 +31,9 @@
     idleTimeoutMillis: 30000, // how long a client is allowed to remain idle before being closed
   });
 
-  const SEARCH_BY_NAME_QUERY = 'SELECT players.name AS player_name,' +
+  const QUERY_BASE = 'SELECT players.name AS player_name,' +
     ' teams.name AS team_name,' +
     ' TO_CHAR(results.record, \'FMMI:SS.MS\') AS record,' +
-    ' results.rank,' +
     ' TO_CHAR(meets.start_date, \'YYYY\') AS year,' +
     ' TO_CHAR(meets.start_date, \'MM\') AS month,' +
     ' TO_CHAR(meets.start_date, \'DD\') AS day,' +
@@ -44,38 +43,58 @@
     ' events.distance,' +
     ' events.style' +
     ' FROM results, players, teams, player_result, meets, events, races' +
-    ' WHERE players.name = $1::text' +
-    ' AND player_result.player_id = players.id' +
+    ' WHERE player_result.player_id = players.id' +
     ' AND players.team_id = teams.id' +
     ' AND players.meet_id = meets.id' +
     ' AND results.id = player_result.result_id' +
     ' AND results.race_id = races.id' +
     ' AND races.meet_id = meets.id' +
-    ' AND races.event_id = events.id' +
-    ' ORDER BY meets.start_date;';
+    ' AND races.event_id = events.id';
+
+  const QUERY_ORDER_BY = 'ORDER BY meets.start_date';
+
+  const DISTANCE_PAT = /([0-9]+)m/;
   app.get('/db', function(req, res) {
-    let query = {};
+    let query = QUERY_BASE;
+    let params = [];
     if (req.query.name && req.query.name.length > 0) {
-      query.name = req.query.name;
+      params.push(req.query.name);
+      query += ' AND players.name = $' + params.length;
     }
-    if (req.query.distance && req.query.distance.length > 0) {
-      query.distance = req.query.distance;
+    let result;
+    if (req.query.distance && req.query.distance.length > 0 &&
+      ((result = DISTANCE_PAT.exec(req.query.distance)) !== null)) {
+      params.push(Number.parseInt(result[1]));
+      query += ' AND events.distance = $' + params.length;
     }
     if (req.query.style && req.query.style.length > 0) {
-      query.style = req.query.style;
+      params.push(req.query.style);
+      query += ' AND events.style = $' + params.length;
     }
+    query += ' ' + QUERY_ORDER_BY + ';';
+
     pool.connect(function(err, client, done) {
       if (err) throw err;
 
+      console.log(query);
+      console.log(params);
+
       client.query({
-        name: 'search_by_name',
-        text: SEARCH_BY_NAME_QUERY,
-        values: [query.name]
+        text: query,
+        values: params
       }, function(err, result) {
         if (err) throw err;
 
         done();
+
         console.log("Result: " + result.rows.length);
+
+        if (result.rows.length === 0) {
+          result.rows.push({
+            year: 'No result'
+          });
+        }
+
         res.send(result.rows);
       });
     });
