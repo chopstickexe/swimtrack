@@ -50,26 +50,27 @@
    * Main process
    */
   const YEAR_TOP_PAGES = [{
-    year: 2016,
-    url: 'http://www.tdsystem.co.jp/i2016.htm',
-    path: 'www.tdsystem.co.jp/i2016.htm'
-  }, {
-    year: 2015,
-    url: 'http://www.tdsystem.co.jp/i2015.htm',
-    path: 'www.tdsystem.co.jp/i2015.htm'
-  }, {
-    year: 2014,
-    url: 'http://www.tdsystem.co.jp/i2014.htm',
-    path: 'www.tdsystem.co.jp/i2014.htm'
-  }, {
-    year: 2013,
-    url: 'http://www.tdsystem.co.jp/i2013.htm',
-    path: 'www.tdsystem.co.jp/i2013.htm'
-  }, {
-    year: 2012,
-    url: 'http://www.tdsystem.co.jp/i2012.htm',
-    path: 'www.tdsystem.co.jp/i2012.htm'
-  }];
+      year: 2016,
+      url: 'http://www.tdsystem.co.jp/i2016.htm',
+      path: 'www.tdsystem.co.jp/i2016.htm'
+    },
+    {
+      year: 2015,
+      url: 'http://www.tdsystem.co.jp/i2015.htm',
+      path: 'www.tdsystem.co.jp/i2015.htm'
+    }, {
+      year: 2014,
+      url: 'http://www.tdsystem.co.jp/i2014.htm',
+      path: 'www.tdsystem.co.jp/i2014.htm'
+    }, {
+      year: 2013,
+      url: 'http://www.tdsystem.co.jp/i2013.htm',
+      path: 'www.tdsystem.co.jp/i2013.htm'
+    }, {
+      year: 2012,
+      url: 'http://www.tdsystem.co.jp/i2012.htm',
+      path: 'www.tdsystem.co.jp/i2012.htm'
+    }];
   let db = pgp({
     host: process.env.PGHOST,
     port: process.env.PGPORT,
@@ -93,7 +94,6 @@
       let meetMaxId = values[1].maxId;
       let events = values[2].map;
       let eventMaxId = values[2].maxId;
-      let players = values[3].map;
       let playerMaxId = values[3].maxId;
       let teams = values[4].map;
       let teamMaxId = values[4].maxId;
@@ -116,6 +116,9 @@
             continue;
           }
           console.log(meetsInYear.length + ' meets found.');
+          //
+          // Process meets
+          //
           for (let meet of meetsInYear) {
             if (!meet.name || meets[meet.name]) { // No name or already in DB
               continue;
@@ -123,6 +126,7 @@
             console.log('Process ' + meet.name);
             let races = {};
             let results = [];
+            let players = {};
             let playerResults = [];
             //
             // Define meet id
@@ -257,6 +261,27 @@
               let playerResultCS = new pgp.helpers.ColumnSet(['player_id', 'result_id'], {
                 table: 'player_result'
               });
+              let playerCS = new pgp.helpers.ColumnSet([
+                'id',
+                'name',
+                'team_id',
+                'meet_id'
+              ], {
+                table: 'players'
+              });
+              //
+              // Insert players
+              //
+              db.tx(function(t) {
+                  return this.none(pgp.helpers.insert(_.values(players), playerCS));
+                })
+                .then(data => {
+                  console.log('Succeed to insert players');
+                })
+                .catch(err => {
+                  console.error('Failed to insert players');
+                  console.error(err.stack);
+                });
               let raceValues = _.values(races);
               db.tx(function(t) {
                   return this.batch([
@@ -369,28 +394,6 @@
         })
         .catch(err => {
           console.error('Failed to insert teams');
-          console.error(err.stack);
-        });
-      //
-      // Insert players
-      //
-      db.tx(function(t) {
-          return this.none(pgp.helpers.insert(
-            _.values(players),
-            new pgp.helpers.ColumnSet([
-              'id',
-              'name',
-              'team_id',
-              'meet_id'
-            ], {
-              table: 'players'
-            })));
-        })
-        .then(data => {
-          console.log('Succeed to insert players');
-        })
-        .catch(err => {
-          console.error('Failed to insert players');
           console.error(err.stack);
         });
     })
