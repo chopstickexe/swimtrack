@@ -6,6 +6,7 @@
   var bodyParser = require('body-parser');
   var _ = require('underscore');
   var pg = require('pg');
+  var url = require('url');
   var app = express();
 
   app.use(logger('dev'));
@@ -21,14 +22,15 @@
   });
 
   /* GET records */
-  if (process.env.HEROKU) {
-    pg.defaults.ssl = true;
-  }
-
+  const PARAMS = url.parse(process.env.DATABASE_URL);
+  const AUTH = PARAMS.auth.split(':');
   let pool = new pg.Pool({
-    host: process.env.PGHOST, // Server hosting the postgres database
-    max: 10, // max number of clients in the pool
-    idleTimeoutMillis: 30000, // how long a client is allowed to remain idle before being closed
+    user: AUTH[0],
+    password: AUTH[1],
+    host: PARAMS.hostname,
+    port: PARAMS.port,
+    database: PARAMS.pathname.split('/')[1],
+    ssl: process.env.HEROKU ? true : false
   });
 
   const QUERY_BASE = 'SELECT players.name AS player_name,' +
