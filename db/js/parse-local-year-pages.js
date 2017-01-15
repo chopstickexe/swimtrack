@@ -69,6 +69,22 @@
     year: 2012,
     url: 'http://www.tdsystem.co.jp/i2012.htm',
     path: 'www.tdsystem.co.jp/i2012.htm'
+  }, {
+    year: 2011,
+    url: 'http://www.tdsystem.co.jp/i2011.htm',
+    path: 'www.tdsystem.co.jp/i2011.htm'
+  }, {
+    year: 2010,
+    url: 'http://www.tdsystem.co.jp/i2010.htm',
+    path: 'www.tdsystem.co.jp/i2010.htm'
+  }, {
+    year: 2009,
+    url: 'http://www.tdsystem.co.jp/i2009.htm',
+    path: 'www.tdsystem.co.jp/i2009.htm'
+  }, {
+    year: 2008,
+    url: 'http://www.tdsystem.co.jp/i2008.htm',
+    path: 'www.tdsystem.co.jp/i2008.htm'
   }];
   let db = pgp({
     host: process.env.PGHOST,
