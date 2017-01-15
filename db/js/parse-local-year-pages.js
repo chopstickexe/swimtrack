@@ -50,27 +50,26 @@
    * Main process
    */
   const YEAR_TOP_PAGES = [{
-      year: 2016,
-      url: 'http://www.tdsystem.co.jp/i2016.htm',
-      path: 'www.tdsystem.co.jp/i2016.htm'
-    },
-    {
-      year: 2015,
-      url: 'http://www.tdsystem.co.jp/i2015.htm',
-      path: 'www.tdsystem.co.jp/i2015.htm'
-    }, {
-      year: 2014,
-      url: 'http://www.tdsystem.co.jp/i2014.htm',
-      path: 'www.tdsystem.co.jp/i2014.htm'
-    }, {
-      year: 2013,
-      url: 'http://www.tdsystem.co.jp/i2013.htm',
-      path: 'www.tdsystem.co.jp/i2013.htm'
-    }, {
-      year: 2012,
-      url: 'http://www.tdsystem.co.jp/i2012.htm',
-      path: 'www.tdsystem.co.jp/i2012.htm'
-    }];
+    year: 2016,
+    url: 'http://www.tdsystem.co.jp/i2016.htm',
+    path: 'www.tdsystem.co.jp/i2016.htm'
+  }, {
+    year: 2015,
+    url: 'http://www.tdsystem.co.jp/i2015.htm',
+    path: 'www.tdsystem.co.jp/i2015.htm'
+  }, {
+    year: 2014,
+    url: 'http://www.tdsystem.co.jp/i2014.htm',
+    path: 'www.tdsystem.co.jp/i2014.htm'
+  }, {
+    year: 2013,
+    url: 'http://www.tdsystem.co.jp/i2013.htm',
+    path: 'www.tdsystem.co.jp/i2013.htm'
+  }, {
+    year: 2012,
+    url: 'http://www.tdsystem.co.jp/i2012.htm',
+    path: 'www.tdsystem.co.jp/i2012.htm'
+  }];
   let db = pgp({
     host: process.env.PGHOST,
     port: process.env.PGPORT,
@@ -149,13 +148,15 @@
                 city: meet.venue.city
               };
             }
+            const meetPagePath = yearTopPage.path.substring(0, yearTopPage.path.lastIndexOf('/') + 1) + meet.url;
             meets[meet.name] = {
               id: meet.id,
               name: meet.name,
               start_date: meet.days[0],
               dates: meet.days,
               venue_id: meet.venue.id,
-              course: meet.venue.course
+              course: meet.venue.course,
+              url: 'http://' + meetPagePath
             };
             //
             // Parse meet page (PRO.HTM)
@@ -163,7 +164,6 @@
             if (!meet.url) {
               continue;
             }
-            const meetPagePath = yearTopPage.path.substring(0, yearTopPage.path.lastIndexOf('/') + 1) + meet.url;
             try {
               let meetParseResult = meetParser.parsePage(util.parseLocalHtml(meetPagePath));
               for (let race of meetParseResult.races) {
@@ -184,9 +184,11 @@
                 //
                 // Define race id and generate a record for race table
                 //
+                const racePagePath = meetPagePath.substring(0, meetPagePath.lastIndexOf('/') + 1) + race.page;
                 let raceObj = {
                   meet_id: meet.id,
-                  event_id: race.eventId
+                  event_id: race.eventId,
+                  url: 'http://' + racePagePath
                 };
                 let raceKey = getRaceKey(raceObj);
                 if (races[raceKey]) {
@@ -200,7 +202,6 @@
                 //
                 // Parse race page (###.HTM)
                 //
-                const racePagePath = meetPagePath.substring(0, meetPagePath.lastIndexOf('/') + 1) + race.page;
                 try {
                   let raceParseResult = raceParser.parseDocument(util.parseLocalHtml(racePagePath));
                   for (let result of raceParseResult.results) {
@@ -252,7 +253,7 @@
               if (results.length === 0) {
                 continue;
               }
-              let raceCS = new pgp.helpers.ColumnSet(['id', 'meet_id', 'event_id'], {
+              let raceCS = new pgp.helpers.ColumnSet(['id', 'meet_id', 'event_id', 'url'], {
                 table: 'races'
               });
               let resultCS = new pgp.helpers.ColumnSet(['id', 'race_id', 'rank', 'record'], {
@@ -340,7 +341,8 @@
                 cast: 'date[]'
               },
               'venue_id',
-              'course'
+              'course',
+              'url'
             ], {
               table: 'meets'
             })));
