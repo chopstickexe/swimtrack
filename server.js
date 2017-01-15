@@ -41,9 +41,11 @@
     ' TO_CHAR(meets.start_date, \'DD\') AS day,' +
     ' meets.name AS meet_name,' +
     ' meets.course,' +
+    ' meets.url AS meet_url,' +
     ' events.sex,' +
     ' events.distance,' +
-    ' events.style' +
+    ' events.style,' +
+    ' races.url AS race_url' +
     ' FROM results, players, teams, player_result, meets, events, races' +
     ' WHERE player_result.player_id = players.id' +
     ' AND players.team_id = teams.id' +
