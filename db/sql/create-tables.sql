@@ -15,6 +15,7 @@ CREATE TABLE meets(
   dates      DATE[],
   venue_id   INTEGER,
   course     course_type,
+  url        VARCHAR(200),
   UNIQUE(name, start_date, venue_id)
 );
 
@@ -38,6 +39,7 @@ CREATE TABLE races(
   id         INTEGER PRIMARY KEY,
   meet_id    INTEGER,
   event_id   INTEGER,
+  url        VARCHAR(200),
   UNIQUE(meet_id, event_id)
 );
 
