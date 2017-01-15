@@ -68,18 +68,16 @@
             <th>長水路・短水路</th>
             <th>種目</th>
             <th>記録</th>
-            <th>公式リザルト</th>
           </tr>
           <tr ng-repeat="record in records">
             <td>{{record.year}}</td>
             <td>{{record.month}}</td>
             <td>{{record.day}}</td>
-            <td>{{record.meet_name}}</td>
+            <td><a href="{{record.meet_url}}" target="_brank">{{record.meet_name}}</a></td>
             <td>{{record.team_name}}</td>
             <td>{{record.course}}</td>
-            <td>{{record.sex}}{{record.distance}}m{{record.style}}</td>
+            <td><a href="{{record.race_url}}" target="_blank">{{record.sex}}{{record.distance}}m{{record.style}}</a></td>
             <td>{{record.record}}</td>
-            <td><a href="{{record.url}}" target="_blank">{{record.url}}</a></td>
           </tr>
         </table>
       </div>
