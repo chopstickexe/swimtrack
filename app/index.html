@@ -45,7 +45,7 @@
             <option>800m</option>
             <option>1500m</option>
             <option>指定なし</option>
-          </select>
+            </select>
           <select class="form-control" ng-model="style" style="width: 100px;">
             <option>自由形</option>
             <option>背泳ぎ</option>
@@ -53,29 +53,18 @@
             <option>バタフライ</option>
             <option>個人メドレー</option>
             <option>指定なし</option>
-          </select>
+            </select>
         </div>
         <button type="submit" class="btn btn-primary">検索</button>
       </form>
       <div style="margin-top: 20px;">
-        <table class="table table-striped">
-          <tr>
-            <th>年</th>
-            <th>月</th>
-            <th>日</th>
-            <th>大会名</th>
-            <th>チーム名</th>
-            <th>長水路・短水路</th>
-            <th>種目</th>
-            <th>記録</th>
-          </tr>
+        <table class="table">
           <tr ng-repeat="record in records">
-            <td>{{record.year}}</td>
-            <td>{{record.month}}</td>
-            <td>{{record.day}}</td>
+            <th>{{record.year}}-{{record.month}}-{{record.day}}</th>
             <td><a href="{{record.meet_url}}" target="_brank">{{record.meet_name}}</a></td>
-            <td>{{record.team_name}}</td>
             <td>{{record.course}}</td>
+            <td>{{record.team_name}}</td>
+            <td>{{record.player_name}}</td>
             <td><a href="{{record.race_url}}" target="_blank">{{record.sex}}{{record.distance}}m{{record.style}}</a></td>
             <td>{{record.record}}</td>
           </tr>
