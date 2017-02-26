@@ -5,24 +5,12 @@ var recordControllers = angular.module('myApp.recordControllers', []);
 
 recordControllers.controller('recordCtrl', ['$scope', '$http', '_',
   function($scope, $http, _) {
-    // Initialize
-    $scope.distance = '25m';
-    $scope.style = '自由形';
-
     $scope.submit = function() {
       var config = {
         params: {}
       };
       if ($scope.name && $scope.name.length > 0) {
         config.params.name = $scope.name;
-      }
-      if ($scope.distance != '指定なし') {
-        config.params.distance = $scope.distance;
-      }
-      if ($scope.style != '指定なし') {
-        config.params.style = $scope.style;
-      }
-      if ($scope.name) {
         $http.get('/db', config)
           .success(function(data) {
             data = _.uniq(data).sort(function(a, b) {

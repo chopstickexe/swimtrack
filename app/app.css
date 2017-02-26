@@ -1,3 +1,18 @@
+.st-result {
+  margin-top: 20px;
+}
+
+.st-summary {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  padding: 8px;
+}
+
+.st-records {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
 @media (max-width: 480px) {
   table {
     border: none;

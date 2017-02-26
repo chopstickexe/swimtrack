@@ -36,6 +36,7 @@
       <form class="form-inline" ng-submit="submit()">
         <div class="form-group">
           <input type="text" class="form-control" ng-model="name" placeholder="選手名を入力してください（例: 鈴木一郎）" style="width: 300px;" />
+          <!--
           <select class="form-control" ng-model="distance" style="width: 100px;">
             <option>25m</option>
             <option>50m</option>
@@ -45,7 +46,7 @@
             <option>800m</option>
             <option>1500m</option>
             <option>指定なし</option>
-            </select>
+          </select>
           <select class="form-control" ng-model="style" style="width: 100px;">
             <option>自由形</option>
             <option>背泳ぎ</option>
@@ -53,22 +54,28 @@
             <option>バタフライ</option>
             <option>個人メドレー</option>
             <option>指定なし</option>
-            </select>
+          </select>
+-->
         </div>
         <button type="submit" class="btn btn-primary">検索</button>
       </form>
-      <div style="margin-top: 20px;">
-        <table class="table">
-          <tr ng-repeat="record in records">
-            <th>{{record.year}}-{{record.month}}-{{record.day}}</th>
-            <td><a href="{{record.meet_url}}" target="_brank">{{record.meet_name}}</a></td>
-            <td>{{record.course}}</td>
-            <td>{{record.team_name}}</td>
-            <td>{{record.player_name}}</td>
-            <td><a href="{{record.race_url}}" target="_blank">{{record.sex}}{{record.distance}}m{{record.style}}</a></td>
-            <td>{{record.record}}</td>
-          </tr>
-        </table>
+      <div class="st-result" ng-if="records">
+        <div class="st-summary">
+          <strong>Found {{records.length}} records</strong>
+        </div>
+        <div class="st-records">
+          <table class="table">
+            <tr ng-repeat="record in records | filter: filter">
+              <th>{{record.year}}-{{record.month}}-{{record.day}}</th>
+              <td><a href="{{record.meet_url}}" target="_brank">{{record.meet_name}}</a></td>
+              <td>{{record.course}}</td>
+              <td>{{record.team_name}}</td>
+              <td>{{record.player_name}}</td>
+              <td><a href="{{record.race_url}}" target="_blank">{{record.sex}}{{record.distance}}m{{record.style}}</a></td>
+              <td>{{record.record}}</td>
+            </tr>
+          </table>
+        </div>
       </div>
     </div>
   </div>
