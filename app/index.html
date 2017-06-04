@@ -30,42 +30,50 @@
       </div>
     </div>
   </nav>
-
   <div class="container-fluid">
     <div ng-controller="recordCtrl">
       <form class="form-inline" ng-submit="submit()">
-        <div class="form-group">
-          <input type="text" class="form-control" ng-model="name" placeholder="選手名を入力してください（例: 鈴木一郎）" style="width: 300px;" />
-          <!--
-          <select class="form-control" ng-model="distance" style="width: 100px;">
-            <option>25m</option>
-            <option>50m</option>
-            <option>100m</option>
-            <option>200m</option>
-            <option>400m</option>
-            <option>800m</option>
-            <option>1500m</option>
-            <option>指定なし</option>
-          </select>
-          <select class="form-control" ng-model="style" style="width: 100px;">
-            <option>自由形</option>
-            <option>背泳ぎ</option>
-            <option>平泳ぎ</option>
-            <option>バタフライ</option>
-            <option>個人メドレー</option>
-            <option>指定なし</option>
-          </select>
--->
-        </div>
+        <input type="text" class="form-control" ng-model="name" placeholder="選手名を入力してください（例: 鈴木一郎）" style="width: 300px;" />
         <button type="submit" class="btn btn-primary">検索</button>
       </form>
+      <div class="st-filter">
+        <h4>Filter</h4>
+        <p><strong>Distance</strong></p>
+        <input type="checkbox" ng-model="Filter.distance.m25" ng-true-value="25" data-ng-false-value=''/>
+        <label>25m</label>
+        <input type="checkbox" ng-model="Filter.distance.m50" ng-true-value="50" data-ng-false-value=''/>
+        <label>50m</label>
+        <input type="checkbox" ng-model="Filter.distance.m100" ng-true-value="100" data-ng-false-value=''/>
+        <label>100m</label>
+        <input type="checkbox" ng-model="Filter.distance.m200" ng-true-value="200" data-ng-false-value=''/>
+        <label>200m</label>
+        <input type="checkbox" ng-model="Filter.distance.m400" ng-true-value="400" data-ng-false-value=''/>
+        <label>400m</label>
+        <input type="checkbox" ng-model="Filter.distance.m800" ng-true-value="800" data-ng-false-value=''/>
+        <label>800m</label>
+        <input type="checkbox" ng-model="Filter.distance.m1500" ng-true-value="1500" data-ng-false-value=''/>
+        <label>1500m</label>
+        <p><strong>Style</strong></p>
+        <input type="checkbox" ng-model="Filter.style.fr" ng-true-value="'自由形'" data-ng-false-value=''/>
+        <label>自由形</label>
+        <input type="checkbox" ng-model="Filter.style.ba" ng-true-value="'背泳ぎ'" data-ng-false-value=''/>
+        <label>背泳ぎ</label>
+        <input type="checkbox" ng-model="Filter.style.br" ng-true-value="'平泳ぎ'" data-ng-false-value=''/>
+        <label>平泳ぎ</label>
+        <input type="checkbox" ng-model="Filter.style.fly" ng-true-value="'バタフライ'" data-ng-false-value=''/>
+        <label>バタフライ</label>
+        <input type="checkbox" ng-model="Filter.style.im" ng-true-value="'個人メドレー'" data-ng-false-value=''/>
+        <label>個人メドレー</label>
+        <p><strong>Free words</strong></p>
+        <input type="text" ng-model="keyword"/>
+      </div>
       <div class="st-result" ng-if="records">
         <div class="st-summary">
           <strong>Found {{records.length}} records</strong>
         </div>
         <div class="st-records">
           <table class="table">
-            <tr ng-repeat="record in records | filter: filter">
+            <tr ng-repeat="record in records | filter : keyword | filter : filterDistance | filter : filterStyle">
               <th>{{record.year}}-{{record.month}}-{{record.day}}</th>
               <td><a href="{{record.meet_url}}" target="_brank">{{record.meet_name}}</a></td>
               <td>{{record.course}}</td>

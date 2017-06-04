@@ -27,5 +27,26 @@ recordControllers.controller('recordCtrl', ['$scope', '$http', '_',
           });
       }
     };
+    $scope.filterDistance = function(record){
+      return filterRecord(record, $scope.Filter, 'distance');
+    };
+    $scope.filterStyle = function(record){
+      return filterRecord(record, $scope.Filter, 'style');
+    };
+    var filterRecord = function(record, filter, recordProp) {
+      if (!record || !filter) {
+        return true;
+      }
+      let filterValues = filter[recordProp];
+      if (!filterValues) {
+        return true;
+      }
+      let matched = true;
+      for (let prop in filterValues) {
+        if (record[recordProp] === filterValues[prop]) {
+          return true;
+        }
+      }
+    };
   }
 ]);
