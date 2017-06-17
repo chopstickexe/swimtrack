@@ -21,6 +21,7 @@
     "jschardet": "^1.4.1",
     "minimatch": "^3.0.2",
     "morgan": "~1.6.1",
+    "pg": "^6.2.4",
     "pg-promise": "^5.3.3",
     "recursive-readdir": "^2.0.0",
     "serve-favicon": "~2.3.0",
