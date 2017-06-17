@@ -50,6 +50,10 @@
    * Main process
    */
   const YEAR_TOP_PAGES = [{
+    year: 2017,
+    url: 'http://www.tdsystem.co.jp/i2017.htm',
+    path: 'www.tdsystem.co.jp/i2017.htm'
+  }, {
     year: 2016,
     url: 'http://www.tdsystem.co.jp/i2016.htm',
     path: 'www.tdsystem.co.jp/i2016.htm'
