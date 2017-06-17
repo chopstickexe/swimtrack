@@ -38,6 +38,7 @@
       </form>
       <div class="st-filter">
         <h4>Filter</h4>
+        <!-- Distance filter -->
         <p><strong>Distance</strong></p>
         <input type="checkbox" ng-model="Filter.distance.m25" ng-true-value="25" data-ng-false-value=''/>
         <label>25m</label>
@@ -53,6 +54,7 @@
         <label>800m</label>
         <input type="checkbox" ng-model="Filter.distance.m1500" ng-true-value="1500" data-ng-false-value=''/>
         <label>1500m</label>
+        <!-- Style filter -->
         <p><strong>Style</strong></p>
         <input type="checkbox" ng-model="Filter.style.fr" ng-true-value="'自由形'" data-ng-false-value=''/>
         <label>自由形</label>
@@ -64,6 +66,13 @@
         <label>バタフライ</label>
         <input type="checkbox" ng-model="Filter.style.im" ng-true-value="'個人メドレー'" data-ng-false-value=''/>
         <label>個人メドレー</label>
+        <!-- Course filter -->
+        <p><strong>Course</strong></p>
+        <input type="checkbox" ng-model="Filter.course.s" ng-true-value="'短水路'" data-ng-false-value=''/>
+        <label>短水路</label>
+        <input type="checkbox" ng-model="Filter.course.l" ng-true-value="'長水路'" data-ng-false-value=''/>
+        <label>長水路</label>
+        <!-- Free text filter -->
         <p><strong>Free words</strong></p>
         <input type="text" ng-model="keyword"/>
       </div>
@@ -73,7 +82,7 @@
         </div>
         <div class="st-records">
           <table class="table">
-            <tr ng-repeat="record in records | filter : keyword | filter : filterDistance | filter : filterStyle">
+            <tr ng-repeat="record in records | filter : keyword | filter : filterDistance | filter : filterStyle | filter : filterCourse">
               <th>{{record.year}}-{{record.month}}-{{record.day}}</th>
               <td><a href="{{record.meet_url}}" target="_brank">{{record.meet_name}}</a></td>
               <td>{{record.course}}</td>

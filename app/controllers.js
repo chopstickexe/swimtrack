@@ -39,6 +39,9 @@ recordControllers.controller('recordCtrl', ['$scope', '$http', '_',
     $scope.filterStyle = function(record){
       return filterRecord(record, $scope.Filter, 'style');
     };
+    $scope.filterCourse = function(record){
+      return filterRecord(record, $scope.Filter, 'course');
+    };
     var filterRecord = function(record, filter, recordProp) {
       if (!record || !filter) {
         return true;
