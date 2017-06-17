@@ -14,12 +14,18 @@ recordControllers.controller('recordCtrl', ['$scope', '$http', '_',
         $http.get('/db', config)
           .success(function(data) {
             data = _.uniq(data).sort(function(a, b) {
-              if (a.year && b.year && a.year !== b.year) {
-                return a.year - b.year;
-              } else if (a.month && b.month && a.month !== b.month) {
-                return a.month - b.month;
-              } else if (a.day && b.day && a.day !== b.day) {
-                return a.day - b.day;
+              if (!a.year || !a.month || !a.day) {
+                return -1;
+              }
+              if (!b.year || !b.month || !b.day) {
+                return 1;
+              }
+              if (a.year !== b.year) {
+                return a.year < b.year ? -1 : 1;
+              } else if (a.month !== b.month) {
+                return a.month < b.month ? -1 : 1;
+              } else if (a.day !== b.day) {
+                return a.day < b.day ? -1 : 1;
               }
               return 0;
             });
